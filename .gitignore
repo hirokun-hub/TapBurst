@@ -1,14 +1,19 @@
 # Xcode
 xcuserdata/
+*.xcuserstate
 *.hmap
 *.ipa
 *.dSYM.zip
 *.dSYM
 timeline.xctimeline
 playground.xcworkspace
+DerivedData/
+*.xccheckout
+*.moved-aside
 
 # Swift Package Manager
 .build/
+.swiftpm/
 
 # CocoaPods
 # Pods/
@@ -26,6 +31,9 @@ fastlane/test_output
 .DS_Store
 *.swp
 *~
+
+# Claude Code
+.claude/
 
 # Kiro
 .kiro/
