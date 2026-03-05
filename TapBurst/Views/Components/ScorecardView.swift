@@ -43,10 +43,6 @@ struct ScorecardView: View {
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(.white.opacity(0.95))
 
-                Text(String(format: "%.1f CPS", result.cps))
-                    .font(.system(size: 24, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.9))
-
                 Text(result.playedAt, format: .dateTime.year().month().day().hour().minute())
                     .font(.system(size: 16, weight: .medium, design: .rounded))
                     .foregroundStyle(.white.opacity(0.8))
@@ -81,8 +77,6 @@ func generateScorecardImage(result: ScoreResult) -> UIImage? {
     ScorecardView(
         result: ScoreResult(
             score: 321,
-            cps: 32.1,
-            maxSimultaneousTouches: 5,
             title: TitleDefinition.title(for: 321),
             isNewBest: true,
             playedAt: .now

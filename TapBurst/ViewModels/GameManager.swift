@@ -127,7 +127,6 @@ final class GameManager {
         let now = CACurrentMediaTime()
 
         session.score += count
-        session.maxSimultaneousTouches = max(session.maxSimultaneousTouches, count)
         session.tapTimestamps.append(contentsOf: Array(repeating: now, count: count))
         pruneOldTimestamps(in: &session, now: now)
 
@@ -155,7 +154,7 @@ final class GameManager {
     }
 
     func handleBackground() {
-        guard phase == .countdown || phase == .playing else {
+        guard phase == .countdown || phase == .playing || phase == .finish else {
             return
         }
 
@@ -222,8 +221,6 @@ final class GameManager {
 
         result = ScoreResult(
             score: score,
-            cps: Double(score) / gameDuration,
-            maxSimultaneousTouches: session.maxSimultaneousTouches,
             title: TitleDefinition.title(for: score),
             isNewBest: isNewBest,
             playedAt: Date()

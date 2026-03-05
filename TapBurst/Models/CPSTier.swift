@@ -5,8 +5,8 @@ enum CPSTier: CaseIterable {
     case medium
     case maximum
 
-    private static let mediumThreshold = 5
-    private static let maximumThreshold = 15
+    private static let mediumThreshold = 8
+    private static let maximumThreshold = 20
 
     static func tier(for cps: Int) -> CPSTier {
         switch cps {

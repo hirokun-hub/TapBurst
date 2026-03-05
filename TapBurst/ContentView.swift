@@ -18,9 +18,17 @@ struct ContentView: View {
             CountdownView(gameManager: gameManager)
         case .playing:
             GamePlayView(gameManager: gameManager)
+        case .finish:
+            finishPlaceholderView
         case .results:
             ResultsView(gameManager: gameManager)
         }
+    }
+
+    private var finishPlaceholderView: some View {
+        Color.black
+            .ignoresSafeArea()
+            .allowsHitTesting(false)
     }
 }
 

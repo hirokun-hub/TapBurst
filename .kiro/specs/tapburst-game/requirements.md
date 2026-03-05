@@ -73,6 +73,12 @@
 - **タップ領域**: すべてのインタラクティブコントロール（ボタン等）は最小44pt × 44ptのタップ領域を確保すること（Apple HIG要件）。ボタン間スペーシングも誤タップ防止に十分な間隔を設けること
 - **ランドスケープUIの縦幅制約**: iPhone SE 3rd genのランドスケープ高さは375ptであり、VStackで縦に積む要素が多い画面（結果画面等）は見切れるリスクがある。HStack 2カラムレイアウトで水平方向のスペースを活用し、ScrollViewは一覧性が重要な画面には使用しない
 - **Safe Area使い分け**: 背景演出（グラデーション等）は `.ignoresSafeArea()` で画面端まで拡張し、操作要素（ボタン・テキスト等）はSafe Area内に配置する（SwiftUIデフォルト動作）。Dynamic Island搭載機種のランドスケープ時Safe AreaもSwiftUIが自動処理するため基本的に追加対応は不要
+- **スコア加算のデバイス公平性**: CADisplayLinkのフレームレートはデバイスにより異なる（iPhone SE: 60Hz、iPhone 16 Pro Max: 120Hz ProMotion）。スコア加算をフレーム単位で行うと理論上限が端末により変わるため、スコア加算は時間ベース（最小加算間隔16.67ms = 1/60秒）で制御すること。描画はデバイスのネイティブレートに任せる。`preferredFrameRateRange`での60fps固定は非推奨（ProMotionの滑らかな描画を犠牲にするため）
+- **フェーズ遷移時のタッチ無効化**: SwiftUIの`allowsHitTesting(false)`だけではUIViewRepresentable経由のタッチイベントを防げない。`touchesBegan`の先頭でゲームフェーズを確認し、対象外フェーズではイベントを破棄するのが最も確実（docs/expert-reviews/2026-03-06-v2-game-mechanics-ux-review.md参照）
+- **画面揺れパターン**: 毎フレーム完全ランダムな方向への移動は「ノイズ的な細かい振動（ジャダー）」になり不快感を誘発する。X軸・Y軸で異なる周波数のsin波を合成するリサージュ図形的アプローチが推奨（周波数1.5〜2.0Hz程度）
+- **CAEmitterCell.scaleSpeedの制約**: scaleSpeedは線形（一定速度）の変化のみ適用される。単一CAEmitterCellで「膨張→収縮」のライフサイクルは実現不可。2種類のセル（短命膨張 + 長命縮小）に分離するか、大きめscaleで生成しscaleSpeedマイナスで「縮みながら消える」方式を使用する
+- **CAEmitterCell.colorの動的変更**: colorはAnimatableプロパティだが、実行中の動的変更はCore Animationキャッシュとの不整合リスクがある。CPSTier変更時はセルを新規作成しemitterCellsを差し替える方式が安全
+- **人間のタップ速度**: 単指10秒タッピングの学術的ベンチマーク値は平均5.5〜7.4 tps（55〜74回/10秒）。スマホでの複数指交互タップは条件が異なるため、称号テーブルの境界値はプレイテストの実データで調整が必須
 
 ### 用語
 

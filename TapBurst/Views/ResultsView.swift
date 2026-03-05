@@ -30,28 +30,16 @@ struct ResultsView: View {
                 )
 
                 metricRow(
-                    label: String(localized: "results.cps"),
-                    value: String(format: "%.1f", result.cps),
-                    sortPriority: 7
-                )
-
-                metricRow(
-                    label: String(localized: "results.max_touches"),
-                    value: "\(result.maxSimultaneousTouches)",
-                    sortPriority: 6
-                )
-
-                metricRow(
                     label: String(localized: "a11y.results.title_label"),
                     value: result.title.localizedName,
-                    sortPriority: 5
+                    sortPriority: 7
                 )
 
                 if result.isNewBest {
                     Text(String(localized: "results.new_best"))
                         .font(.system(size: 26, weight: .black, design: .rounded))
                         .foregroundStyle(.yellow)
-                        .accessibilitySortPriority(4)
+                        .accessibilitySortPriority(6)
                 }
             }
             .frame(maxWidth: .infinity)
@@ -137,8 +125,6 @@ struct ResultsView: View {
     let manager = GameManager()
     manager.result = ScoreResult(
         score: 250,
-        cps: 25.0,
-        maxSimultaneousTouches: 5,
         title: TitleDefinition.title(for: 250),
         isNewBest: true,
         playedAt: .now

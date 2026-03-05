@@ -7,11 +7,11 @@ struct TitleDefinition {
     static let allTitles: [TitleDefinition] = [
         TitleDefinition(localizedNameKey: "title.warming_up", scoreRange: 0...49),
         TitleDefinition(localizedNameKey: "title.not_bad", scoreRange: 50...99),
-        TitleDefinition(localizedNameKey: "title.speed_star", scoreRange: 100...199),
-        TitleDefinition(localizedNameKey: "title.machine_gun", scoreRange: 200...299),
-        TitleDefinition(localizedNameKey: "title.sonic", scoreRange: 300...399),
-        TitleDefinition(localizedNameKey: "title.beyond_human", scoreRange: 400...499),
-        TitleDefinition(localizedNameKey: "title.god_tier", scoreRange: 500...Int.max),
+        TitleDefinition(localizedNameKey: "title.speed_star", scoreRange: 100...159),
+        TitleDefinition(localizedNameKey: "title.machine_gun", scoreRange: 160...219),
+        TitleDefinition(localizedNameKey: "title.sonic", scoreRange: 220...289),
+        TitleDefinition(localizedNameKey: "title.beyond_human", scoreRange: 290...369),
+        TitleDefinition(localizedNameKey: "title.god_tier", scoreRange: 370...Int.max),
     ]
 
     var localizedName: String {
