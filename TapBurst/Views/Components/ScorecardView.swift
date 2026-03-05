@@ -1,0 +1,91 @@
+import SwiftUI
+import UIKit
+
+struct ScorecardView: View {
+    let result: ScoreResult
+
+    static let cardSize = CGSize(width: 390, height: 600)
+    static let logoAssetName = "ScorecardLogo"
+
+    private static let cornerRadius: CGFloat = 28
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: Self.cornerRadius, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.05, green: 0.08, blue: 0.20),
+                            Color(red: 0.13, green: 0.24, blue: 0.50)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay {
+                    RoundedRectangle(cornerRadius: Self.cornerRadius, style: .continuous)
+                        .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                }
+
+            VStack(spacing: 18) {
+                Image(Self.logoAssetName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 72)
+                    .padding(.top, 10)
+
+                Text("\(result.score)")
+                    .font(.system(size: 94, weight: .black, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundStyle(.white)
+
+                Text(result.title.localizedName)
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.95))
+
+                Text(String(format: "%.1f CPS", result.cps))
+                    .font(.system(size: 24, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.9))
+
+                Text(result.playedAt, format: .dateTime.year().month().day().hour().minute())
+                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.8))
+                    .padding(.top, 4)
+
+                Spacer()
+
+                Text("TapBurst")
+                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.85))
+                    .padding(.bottom, 12)
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 26)
+        }
+        .frame(width: Self.cardSize.width, height: Self.cardSize.height)
+    }
+}
+
+@MainActor
+func generateScorecardImage(result: ScoreResult) -> UIImage? {
+    let renderer = ImageRenderer(content: ScorecardView(result: result))
+    renderer.proposedSize = ProposedViewSize(
+        width: ScorecardView.cardSize.width,
+        height: ScorecardView.cardSize.height
+    )
+    renderer.scale = UIScreen.main.scale
+    return renderer.uiImage
+}
+
+#Preview {
+    ScorecardView(
+        result: ScoreResult(
+            score: 321,
+            cps: 32.1,
+            maxSimultaneousTouches: 5,
+            title: TitleDefinition.title(for: 321),
+            isNewBest: true,
+            playedAt: .now
+        )
+    )
+}

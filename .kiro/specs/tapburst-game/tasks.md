@@ -207,21 +207,22 @@
 
 ### 5a: コンポーネント / Components
 
-- [ ] **T-050** `BackgroundEffectView.swift` を実装
+- [x] **T-050** `BackgroundEffectView.swift` を実装
   - `LinearGradient` — TimeStage別の色（calm: 紺〜深青, warm: 紫〜オレンジ, intense: 赤〜黄）
   - `animation(.easeInOut)` でスムーズ遷移
   - `RadialGradient` ビネットオーバーレイ（opacity: calm=0, warm=0.3, intense=0.5）
   - 対応要件: REQ-12
-- [ ] **T-051** `FlashOverlayView.swift` を実装
+- [x] **T-051** `FlashOverlayView.swift` を実装
   - `Color.white.opacity(opacity)` — flashOpacity に連動
   - `allowsHitTesting(false)`
   - 対応要件: REQ-12
-- [ ] **T-052** `GameHUDView.swift` を実装
-  - スコア表示: 72pt以上の固定フォントサイズ（Dynamic Type無視）
-  - 残り時間表示
+- [x] **T-052** `GameHUDView.swift` を実装
+  - ZStackレイアウト: スコアを画面中央、タイマーを右上に配置（REQ-8「画面中央」準拠）
+  - スコア表示: 80pt固定フォントサイズ（≥72pt, Dynamic Type無視）
+  - 残り時間表示: 数値のみ（ラベルなし）、右上配置
   - `allowsHitTesting(false)`
   - 対応要件: REQ-8, NFR-8, NFR-14
-- [ ] **T-053** `ScorecardView.swift` を実装
+- [x] **T-053** `ScorecardView.swift` を実装
   - ImageRenderer専用View（390×600pt）
   - `Image("ScorecardLogo")` — 専用ロゴアセット
   - スコア, 称号, CPS, プレイ日時（`.dateTime` format — date+time）
