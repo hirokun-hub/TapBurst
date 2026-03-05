@@ -11,6 +11,6 @@ struct FlashOverlayView: View {
     }
 }
 
-#Preview {
+#Preview(traits: .landscapeLeft) {
     FlashOverlayView(opacity: 0.3)
 }

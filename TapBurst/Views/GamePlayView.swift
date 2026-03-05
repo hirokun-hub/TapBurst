@@ -26,6 +26,6 @@ struct GamePlayView: View {
     }
 }
 
-#Preview {
+#Preview(traits: .landscapeLeft) {
     GamePlayView(gameManager: GameManager())
 }

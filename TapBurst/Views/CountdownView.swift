@@ -41,6 +41,6 @@ struct CountdownView: View {
     }
 }
 
-#Preview {
+#Preview(traits: .landscapeLeft) {
     CountdownView(gameManager: GameManager())
 }

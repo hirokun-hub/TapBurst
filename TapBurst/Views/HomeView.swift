@@ -49,6 +49,6 @@ struct HomeView: View {
     }
 }
 
-#Preview {
+#Preview(traits: .landscapeLeft) {
     HomeView(gameManager: GameManager())
 }

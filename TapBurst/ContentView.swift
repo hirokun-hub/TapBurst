@@ -24,6 +24,6 @@ struct ContentView: View {
     }
 }
 
-#Preview {
+#Preview(traits: .landscapeLeft) {
     ContentView(gameManager: GameManager())
 }

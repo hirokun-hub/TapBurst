@@ -77,7 +77,7 @@ func generateScorecardImage(result: ScoreResult) -> UIImage? {
     return renderer.uiImage
 }
 
-#Preview {
+#Preview(traits: .landscapeLeft) {
     ScorecardView(
         result: ScoreResult(
             score: 321,

@@ -21,37 +21,40 @@ struct ResultsView: View {
 
     @ViewBuilder
     private func content(result: ScoreResult) -> some View {
-        VStack(spacing: Self.sectionSpacing) {
-            metricRow(
-                label: String(localized: "results.score"),
-                value: "\(result.score)",
-                sortPriority: 8
-            )
+        HStack(alignment: .top, spacing: 32) {
+            VStack(spacing: Self.sectionSpacing) {
+                metricRow(
+                    label: String(localized: "results.score"),
+                    value: "\(result.score)",
+                    sortPriority: 8
+                )
 
-            metricRow(
-                label: String(localized: "results.cps"),
-                value: String(format: "%.1f", result.cps),
-                sortPriority: 7
-            )
+                metricRow(
+                    label: String(localized: "results.cps"),
+                    value: String(format: "%.1f", result.cps),
+                    sortPriority: 7
+                )
 
-            metricRow(
-                label: String(localized: "results.max_touches"),
-                value: "\(result.maxSimultaneousTouches)",
-                sortPriority: 6
-            )
+                metricRow(
+                    label: String(localized: "results.max_touches"),
+                    value: "\(result.maxSimultaneousTouches)",
+                    sortPriority: 6
+                )
 
-            metricRow(
-                label: String(localized: "a11y.results.title_label"),
-                value: result.title.localizedName,
-                sortPriority: 5
-            )
+                metricRow(
+                    label: String(localized: "a11y.results.title_label"),
+                    value: result.title.localizedName,
+                    sortPriority: 5
+                )
 
-            if result.isNewBest {
-                Text(String(localized: "results.new_best"))
-                    .font(.system(size: 26, weight: .black, design: .rounded))
-                    .foregroundStyle(.yellow)
-                    .accessibilitySortPriority(4)
+                if result.isNewBest {
+                    Text(String(localized: "results.new_best"))
+                        .font(.system(size: 26, weight: .black, design: .rounded))
+                        .foregroundStyle(.yellow)
+                        .accessibilitySortPriority(4)
+                }
             }
+            .frame(maxWidth: .infinity)
 
             VStack(spacing: Self.buttonSpacing) {
                 Button {
@@ -81,7 +84,7 @@ struct ResultsView: View {
                 .accessibilityHint(Text(String(localized: "a11y.results.home_hint")))
                 .accessibilitySortPriority(1)
             }
-            .padding(.top, 10)
+            .frame(minWidth: 200, idealWidth: 240, maxWidth: 280)
         }
     }
 
@@ -130,7 +133,7 @@ struct ResultsView: View {
     }
 }
 
-#Preview {
+#Preview(traits: .landscapeLeft) {
     let manager = GameManager()
     manager.result = ScoreResult(
         score: 250,

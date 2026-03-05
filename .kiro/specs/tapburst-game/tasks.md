@@ -288,7 +288,7 @@
 
 > design.md §12 対応
 
-- [ ] **T-080** `Localizable.xcstrings` に全キーを登録
+- [x] **T-080** `Localizable.xcstrings` に全キーを登録
   - UI文言キー: `home.start`, `home.best_score`, `countdown.ready`, `game.tap_invalid`, `results.score`, `results.cps`, `results.max_touches`, `results.new_best`, `results.retry`, `results.share`, `results.go_home`
   - 称号キー: `title.warming_up` 〜 `title.god_tier`（7件）
   - A11yキー: `a11y.home.start_hint`, `a11y.results.title_label`, `a11y.results.retry_hint`, `a11y.results.share_hint`, `a11y.results.home_hint`

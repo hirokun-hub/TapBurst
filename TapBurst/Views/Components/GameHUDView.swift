@@ -36,7 +36,7 @@ struct GameHUDView: View {
     }
 }
 
-#Preview {
+#Preview(traits: .landscapeLeft) {
     GameHUDView(score: 128, remainingTime: 6.7)
         .background(Color.black)
 }

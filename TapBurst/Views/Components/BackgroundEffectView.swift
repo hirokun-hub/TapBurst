@@ -51,6 +51,6 @@ struct BackgroundEffectView: View {
     }
 }
 
-#Preview {
+#Preview(traits: .landscapeLeft) {
     BackgroundEffectView(timeStage: .warm)
 }
