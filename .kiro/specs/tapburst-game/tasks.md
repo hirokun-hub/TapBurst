@@ -130,12 +130,12 @@
 
 > design.md §7 対応
 
-- [ ] **T-030** `GameTouchView.swift` (UIViewRepresentable) を実装
+- [x] **T-030** `GameTouchView.swift` (UIViewRepresentable) を実装
   - `TouchDetectionView` (UIView subclass)
   - `isMultipleTouchEnabled = true`
   - `touchesBegan` → `onTaps(count, positions)` クロージャ通知
   - 対応要件: REQ-6, REQ-7, NFR-2
-- [ ] **T-031** `TouchDetectionView` にパーティクル生成を実装
+- [x] **T-031** `TouchDetectionView` にパーティクル生成を実装
   - `spawnParticleEmitter(at:)` — CAEmitterLayer + CAEmitterCell
   - birthRate設定 → `emitterStopDelay`(0.05s)後停止 → `emitterRemoveDelay`(0.5s)後remove
   - ParticleConfig による段階別パラメータ適用
@@ -148,53 +148,53 @@
 
 > design.md §4, §5 対応
 
-- [ ] **T-040** `GameManager.swift` 基本構造を実装
+- [x] **T-040** `GameManager.swift` 基本構造を実装
   - `@MainActor @Observable class`
   - 全プロパティ定義（phase, session, result, remainingTime, currentCPS, etc.）
   - 全定数定義（gameDuration, countdownStart, shakeAmplitude, flashInterval, invalidShakeAmplitude）
   - サービス依存（ScoreStore, AudioService, HapticsService）
   - `bestScore` 初期ロード
   - 対応要件: —（基盤）
-- [ ] **T-041** カウントダウンロジックを実装
-  - `startGame()` — phase → .countdown, Timer.scheduledTimer(1秒間隔)
+- [x] **T-041** カウントダウンロジックを実装
+  - `startGame()` — phase → .countdown, `UIApplication.shared.isIdleTimerDisabled = true`, Timer.scheduledTimer(1秒間隔, クロージャ+[weak self])
   - `countdownNumber`: 3→2→1→nil(GO!)
   - `playCountdownTick(number:)` 各秒固有音
-  - `beginPlaying()` — `UIApplication.shared.isIdleTimerDisabled = true` + CADisplayLink 開始
+  - `beginPlaying()` — CADisplayLink 開始
   - 対応要件: REQ-1, REQ-2, REQ-14, NFR-7
-- [ ] **T-042** カウントダウン中の誤タップ処理を実装
+- [x] **T-042** カウントダウン中の誤タップ処理を実装
   - `registerInvalidCountdownTap()` — スコア不変（REQ-3）
   - 軽い画面振動（±2pt, Spring 0.3s）
   - `invalidTapOverlayOpacity` + フェードアウト
   - 対応要件: REQ-3, REQ-4
-- [ ] **T-043** ゲームループ（displayLinkFired）を実装
+- [x] **T-043** ゲームループ（displayLinkFired）を実装
   - `elapsed = CACurrentMediaTime() - startTime`
   - `remainingTime = max(0, gameDuration - elapsed)`
   - CPS算出: tapTimestamps から1秒以上古い要素を除去、残要素数 = currentCPS
   - TimeStage / CPSTier 評価
   - `elapsed >= gameDuration` で `endGame()` 呼び出し
   - 対応要件: REQ-5, REQ-9, NFR-1, NFR-3
-- [ ] **T-044** タップ登録ロジックを実装
+- [x] **T-044** タップ登録ロジックを実装
   - `registerTaps(count:, positions:)` — phase == .playing 限定
   - `score += count`, `tapTimestamps.append`, `maxSimultaneousTouches` 更新
   - AudioService.playTapSound(tier:) + HapticsService.triggerTapFeedback() 呼び出し
   - 対応要件: REQ-6, REQ-7, REQ-8, REQ-11, REQ-13
-- [ ] **T-045** 演出状態更新を実装
+- [x] **T-045** 演出状態更新を実装
   - `.intense` 時: shakeOffset ±shakeAmplitude / flashOpacity 0.7秒間隔
   - `.warm` 時: shakeOffset = .zero
   - 毎フレーム displayLinkFired 内で実行
   - 対応要件: REQ-12
-- [ ] **T-046** ゲーム終了・結果生成を実装
+- [x] **T-046** ゲーム終了・結果生成を実装
   - `endGame()` — CADisplayLink停止, isIdleTimerDisabled = false
   - `ScoreResult` 生成（score, cps, maxSimultaneousTouches, title, isNewBest, playedAt）
   - `ScoreStore.updateIfNeeded(score:)` 呼び出し
   - `phase = .results`
   - `audioService.playFinish()`
   - 対応要件: REQ-9, REQ-16, REQ-17, REQ-20, REQ-22
-- [ ] **T-047** リトライ・ホーム遷移を実装
+- [x] **T-047** リトライ・ホーム遷移を実装
   - `retry()` — スコアリセット → `startGame()` 呼び出し
   - `goHome()` — `phase = .home`
   - 対応要件: REQ-18, REQ-19
-- [ ] **T-048** バックグラウンド移行処理を実装
+- [x] **T-048** バックグラウンド移行処理を実装
   - `handleBackground()` — セッション破棄, CADisplayLink停止, Timer停止, phase = .home
   - `isIdleTimerDisabled = false`
   - 対応要件: REQ-26
