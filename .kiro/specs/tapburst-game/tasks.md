@@ -20,25 +20,29 @@
 
 > design.md §13 対応
 
-- [ ] **T-001** `📐 Xcode GUI` Xcodeプロジェクト設定変更
-  - `TARGETED_DEVICE_FAMILY` → "1" (iPhone only)
-  - `IPHONEOS_DEPLOYMENT_TARGET` → 17.0
-  - `UISupportedInterfaceOrientations` → Landscape Right + Landscape Left
-  - `UIRequiresFullScreen` → true
-  - `SWIFT_VERSION` → 5.0（確認のみ。現在値で正しい）
+- [x] **T-001** Xcodeプロジェクト設定変更
+  - `project.pbxproj` 直接編集で実施（Xcode GUI不要）
+  - `TARGETED_DEVICE_FAMILY` → `1` (iPhone only) — 全ターゲット（TapBurst, Tests, UITests）
+  - `IPHONEOS_DEPLOYMENT_TARGET` → `17.0` — プロジェクトレベル＋全ターゲット
+  - `UISupportedInterfaceOrientations_iPhone` → Landscape Left + Landscape Right のみ（Portrait削除）
+  - `UISupportedInterfaceOrientations_iPad` → 削除（iPhone専用のため不要）
+  - `UIRequiresFullScreen` → `YES`（Debug/Release両方）
+  - `SWIFT_VERSION` → `5.0`（変更なし、確認済み）
   - 対応要件: NFR-4, NFR-9
-- [ ] **T-002** `📐 Xcode GUI` ローカライゼーション設定
+- [x] **T-002** ローカライゼーション設定
+  - `project.pbxproj` 直接編集で実施（Xcode GUI不要）
   - `knownRegions` に `ja` を追加
-  - `Localizable.xcstrings` (String Catalog) を作成
+  - `TapBurst/Localizable.xcstrings` (String Catalog) を空テンプレートとして作成
   - 対応要件: NFR-5
-- [ ] **T-003** フォルダ構成の作成
+- [x] **T-003** フォルダ構成の作成
   - `TapBurst/Models/`, `ViewModels/`, `Views/`, `Views/Components/`, `UIKit/`, `Services/`, `Resources/Sounds/` を作成
-  - Xcode が自動認識することを確認
+  - `PBXFileSystemSynchronizedRootGroup` により Xcode が自動認識することを確認
+  - 注意: `.gitkeep` は `PBXFileSystemSynchronizedRootGroup` と競合しビルドエラーとなるため使用不可。空ディレクトリはgitで追跡されないが、Phase 1以降でSwiftファイル追加時に自動的に追跡対象となる
   - 対応設計: §1
-- [ ] **T-004** `📐 Xcode GUI` Launch Screen を設定
-  - Xcode の UILaunchScreen 設定を確認・カスタマイズ（現在は自動生成 `UILaunchScreen_Generation = YES`）
-  - 背景色・アプリ名等を設定し、App Store審査ガイドラインに準拠
-  - 完了条件: 設定後のXcode設定画面スクリーンショットを証跡として保存（`.kiro/evidence/` 等）
+- [x] **T-004** Launch Screen を設定
+  - `UILaunchScreen_Generation = YES`（自動生成）を維持 — App Store審査ガイドラインに準拠
+  - `UIStatusBarStyle = UIStatusBarStyleDefault` を追加（Debug/Release両方）
+  - 背景色・アプリ名等のカスタマイズはビジュアルデザイン確定後（Phase 5以降）に実施予定
   - 対応要件: NFR-17
 
 ---
