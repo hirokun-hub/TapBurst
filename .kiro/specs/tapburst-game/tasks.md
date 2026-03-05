@@ -52,45 +52,45 @@
 > design.md §3 対応。全て純粋ロジックのため TDD で実装する。
 > テストファイル: `TapBurstTests/ModelsTests.swift`
 
-- [ ] **T-010** `🧪 TDD` `GamePhase.swift` を実装
+- [x] **T-010** `🧪 TDD` `GamePhase.swift` を実装
   - enum: `.home`, `.countdown`, `.playing`, `.results`
   - テスト: 4つのcaseが存在することの確認
   - 対応要件: —（基盤型）
-- [ ] **T-011** `🧪 TDD` `TitleDefinition.swift` を実装
+- [x] **T-011** `🧪 TDD` `TitleDefinition.swift` を実装
   - `allTitles` 配列（7段階の称号テーブル）
   - `title(for:)` スコア→称号マッピング
   - `localizedName` プロパティ
   - テスト: 全境界値テスト（0, 49, 50, 99, 100, 199, 200, 299, 300, 399, 400, 499, 500, 999）
   - テスト: 全スコア範囲がギャップなくカバーされていること
   - 対応要件: REQ-17, Appendix A
-- [ ] **T-012** `🧪 TDD` `TimeStage.swift` を実装
+- [x] **T-012** `🧪 TDD` `TimeStage.swift` を実装
   - enum: `.calm`, `.warm`, `.intense`
   - `stage(at:)` 経過時間→段階マッピング
   - 閾値: `warmThreshold = 5.0`, `intenseThreshold = 8.0`（型内部に定義）
   - テスト: 境界値テスト（0, 4.99→calm, 5.0→warm, 7.99→warm, 8.0→intense, 10.0→intense）
   - 対応要件: REQ-12, Appendix B
-- [ ] **T-013** `🧪 TDD` `CPSTier.swift` を実装
+- [x] **T-013** `🧪 TDD` `CPSTier.swift` を実装
   - enum: `.normal`, `.medium`, `.maximum`
   - `tier(for:)` CPS→段階マッピング
   - 閾値: `mediumThreshold = 5`, `maximumThreshold = 15`（型内部に定義）
   - テスト: 境界値テスト（0, 4→normal, 5→medium, 14→medium, 15→maximum, 100→maximum）
   - 対応要件: REQ-15, Appendix B
-- [ ] **T-014** `🧪 TDD` `ParticleConfig.swift` を実装
+- [x] **T-014** `🧪 TDD` `ParticleConfig.swift` を実装
   - `birthRate`, `scale`, `lifetime` プロパティ
   - `.normal`, `.medium`, `.maximum` static定数
   - `config(for:)` CPSTier→ParticleConfig マッピング
   - テスト: 各tierの値が設計書の値と一致すること
   - 対応要件: REQ-10, REQ-15
-- [ ] **T-015** `🧪 TDD` `PitchConfig.swift` を実装
+- [x] **T-015** `🧪 TDD` `PitchConfig.swift` を実装
   - `pitchShift` プロパティ
   - `.normal`(0), `.medium`(200), `.maximum`(500) static定数
   - `config(for:)` CPSTier→PitchConfig マッピング
   - テスト: 各tierの値が設計書の値と一致すること
   - 対応要件: REQ-13, REQ-15
-- [ ] **T-016** `GameSession.swift` を実装
+- [x] **T-016** `GameSession.swift` を実装
   - `score`, `maxSimultaneousTouches`, `tapTimestamps`, `startTime` プロパティ
   - 対応要件: REQ-5, REQ-6
-- [ ] **T-017** `ScoreResult.swift` を実装
+- [x] **T-017** `ScoreResult.swift` を実装
   - `score`, `cps`, `maxSimultaneousTouches`, `title`, `isNewBest`, `playedAt` プロパティ
   - 対応要件: REQ-16
 
