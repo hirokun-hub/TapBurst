@@ -100,16 +100,16 @@
 
 > design.md §8, §11 対応
 
-- [ ] **T-020** `🧪 TDD` `ScoreStore.swift` を実装
+- [x] **T-020** `🧪 TDD` `ScoreStore.swift` を実装
   - `bestScore` computed property（UserDefaults wrapper）
   - `updateIfNeeded(score:) -> Bool`
   - テスト: 高スコア時にtrue + 更新、低スコア時にfalse + 据え置き、初期値0
   - 対応要件: REQ-20, REQ-22, NFR-11, NFR-12
-- [ ] **T-021** `HapticsService.swift` を実装
+- [x] **T-021** `HapticsService.swift` を実装
   - `UIImpactFeedbackGenerator(style: .light)`
   - `triggerTapFeedback()` 60fps間引き（`minimumInterval = 0.016`）
   - 対応要件: REQ-11
-- [ ] **T-022** `AudioService.swift` を実装
+- [x] **T-022** `AudioService.swift` を実装
   - AVAudioEngine セットアップ
   - AVAudioSession category `.ambient`
   - バッファサイズ 64サンプル設定
@@ -118,7 +118,7 @@
   - `playCountdownTick(number:)` 各秒固有音再生（3/2/1）
   - `playGo()`, `playFinish()`
   - 対応要件: REQ-13, REQ-14, REQ-15, NFR-15
-- [ ] **T-023** `🔊 Asset` サウンドアセットの準備
+- [x] **T-023** `🔊 Asset` サウンドアセットの準備
   - `tap.caf`, `countdown3.caf`, `countdown2.caf`, `countdown1.caf`, `go.caf`, `finish.caf`
   - `.caf` 形式（デコードオーバーヘッドゼロ）
   - `Resources/Sounds/` に配置
