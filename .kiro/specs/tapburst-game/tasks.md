@@ -232,18 +232,18 @@
 
 ### 5b: 画面 / Screens
 
-- [ ] **T-060** `HomeView.swift` を実装
+- [x] **T-060** `HomeView.swift` を実装
   - STARTボタン → `gameManager.startGame()`
   - 自己ベスト表示 ← `gameManager.bestScore`
   - VoiceOverアクセシビリティ（labels, values, hints, traits, reading order）
   - 対応要件: REQ-1, REQ-21, NFR-13
-- [ ] **T-061** `CountdownView.swift` を実装
+- [x] **T-061** `CountdownView.swift` を実装
   - カウントダウン数字表示（3, 2, 1, GO!）
   - 全面タップ検出（`contentShape(Rectangle())` + `onTapGesture`）
   - 誤タップ時の半透明オーバーレイ + 「まだだよ!/Not yet!」
   - `.offset(shakeOffset)` で振動適用
   - 対応要件: REQ-1, REQ-3, REQ-4
-- [ ] **T-062** `GamePlayView.swift` を実装
+- [x] **T-062** `GamePlayView.swift` を実装
   - ZStack 4層レイヤー構成:
     1. BackgroundEffectView（allowsHitTesting false）
     2. GameTouchView（タッチ受付）
@@ -252,7 +252,7 @@
   - `.offset(shakeOffset)` 全体振動
   - ステータスバー非表示（`prefersStatusBarHidden`）
   - 対応要件: REQ-8, REQ-10, REQ-12, NFR-6, NFR-7, NFR-8
-- [ ] **T-063** `ResultsView.swift` を実装
+- [x] **T-063** `ResultsView.swift` を実装
   - スコア, CPS, 最大同時タッチ数, 称号 表示
   - NEW BEST! 表示（`isNewBest` 時）
   - 「もう1回」ボタン → `gameManager.retry()`
