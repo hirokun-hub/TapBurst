@@ -155,6 +155,10 @@ final class GameManager {
     }
 
     func handleBackground() {
+        guard phase == .countdown || phase == .playing else {
+            return
+        }
+
         stopActiveLoops()
         UIApplication.shared.isIdleTimerDisabled = false
         phase = .home

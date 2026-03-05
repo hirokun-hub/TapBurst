@@ -17,13 +17,14 @@ final class AudioService {
     private var goBuffer: AVAudioPCMBuffer?
     private var finishBuffer: AVAudioPCMBuffer?
     private var currentPlayerIndex = 0
+    private var isEngineReady = false
 
     init() {
         setup()
     }
 
     func playTapSound(tier: CPSTier) {
-        guard let tapBuffer, !tapPlayers.isEmpty else {
+        guard isEngineReady, let tapBuffer, !tapPlayers.isEmpty else {
             return
         }
 
@@ -70,23 +71,6 @@ final class AudioService {
             try session.setPreferredIOBufferDuration(Double(preferredBufferSize) / sampleRate)
             try session.setActive(true)
 
-            for _ in 0..<tapPlayerPoolSize {
-                let player = AVAudioPlayerNode()
-                let pitchUnit = AVAudioUnitTimePitch()
-                pitchUnit.bypass = false
-
-                engine.attach(player)
-                engine.attach(pitchUnit)
-                engine.connect(player, to: pitchUnit, format: nil)
-                engine.connect(pitchUnit, to: engine.mainMixerNode, format: nil)
-
-                tapPlayers.append(player)
-                pitchUnits.append(pitchUnit)
-            }
-
-            engine.attach(eventPlayer)
-            engine.connect(eventPlayer, to: engine.mainMixerNode, format: nil)
-
             tapBuffer = loadBuffer(named: "tap")
             countdown3Buffer = loadBuffer(named: "countdown3")
             countdown2Buffer = loadBuffer(named: "countdown2")
@@ -94,10 +78,44 @@ final class AudioService {
             goBuffer = loadBuffer(named: "go")
             finishBuffer = loadBuffer(named: "finish")
 
+            if let tapFormat = tapBuffer?.format {
+                for _ in 0..<tapPlayerPoolSize {
+                    let player = AVAudioPlayerNode()
+                    let pitchUnit = AVAudioUnitTimePitch()
+                    pitchUnit.bypass = false
+
+                    engine.attach(player)
+                    engine.attach(pitchUnit)
+                    engine.connect(player, to: pitchUnit, format: tapFormat)
+                    engine.connect(pitchUnit, to: engine.mainMixerNode, format: tapFormat)
+
+                    tapPlayers.append(player)
+                    pitchUnits.append(pitchUnit)
+                }
+            }
+
+            let eventFormat = countdown3Buffer?.format
+                ?? countdown2Buffer?.format
+                ?? countdown1Buffer?.format
+                ?? goBuffer?.format
+                ?? finishBuffer?.format
+                ?? tapBuffer?.format
+
+            if let eventFormat {
+                engine.attach(eventPlayer)
+                engine.connect(eventPlayer, to: engine.mainMixerNode, format: eventFormat)
+            }
+
+            guard !tapPlayers.isEmpty || eventFormat != nil else {
+                return
+            }
+
             try engine.start()
+            isEngineReady = true
         } catch {
             tapPlayers.removeAll()
             pitchUnits.removeAll()
+            isEngineReady = false
         }
     }
 
@@ -123,7 +141,7 @@ final class AudioService {
     }
 
     private func playEventBuffer(_ buffer: AVAudioPCMBuffer?) {
-        guard let buffer else {
+        guard isEngineReady, let buffer else {
             return
         }
 

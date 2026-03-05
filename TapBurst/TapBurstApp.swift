@@ -9,9 +9,17 @@ import SwiftUI
 
 @main
 struct TapBurstApp: App {
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var gameManager = GameManager()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(gameManager: gameManager)
+                .onChange(of: scenePhase) { _, newPhase in
+                    if newPhase == .background {
+                        gameManager.handleBackground()
+                    }
+                }
         }
     }
 }

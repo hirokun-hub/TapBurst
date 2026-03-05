@@ -113,6 +113,8 @@
   - AVAudioEngine セットアップ
   - AVAudioSession category `.ambient`
   - バッファサイズ 64サンプル設定
+  - バッファ読込を先行し、バッファの `format` を使って `engine.connect()` に明示指定（チャンネル数ミスマッチ防止）
+  - `isEngineReady` ガードで音声リソース不在時のクラッシュ防止
   - AVAudioPlayerNode ×4 プール + AVAudioUnitTimePitch
   - `playTapSound(tier:)` ラウンドロビン + ピッチ制御
   - `playCountdownTick(number:)` 各秒固有音再生（3/2/1）
@@ -195,7 +197,7 @@
   - `goHome()` — `phase = .home`
   - 対応要件: REQ-18, REQ-19
 - [x] **T-048** バックグラウンド移行処理を実装
-  - `handleBackground()` — セッション破棄, CADisplayLink停止, Timer停止, phase = .home
+  - `handleBackground()` — `.countdown`/`.playing` フェーズのみ実行（guard）、セッション破棄, CADisplayLink停止, Timer停止, phase = .home
   - `isIdleTimerDisabled = false`
   - 対応要件: REQ-26
 
@@ -267,15 +269,15 @@
 
 > design.md §2, §4 対応
 
-- [ ] **T-070** `ContentView.swift` を修正
-  - `GameManager` を `@State` で保持
+- [x] **T-070** `ContentView.swift` を修正
+  - `GameManager` を `let` で受け取り（所有権は `TapBurstApp` の `@State`）
   - `gameManager.phase` による switch 分岐:
     - `.home` → HomeView
     - `.countdown` → CountdownView
     - `.playing` → GamePlayView
     - `.results` → ResultsView
   - 対応要件: —（基盤）
-- [ ] **T-071** `TapBurstApp.swift` を修正
+- [x] **T-071** `TapBurstApp.swift` を修正
   - `@Environment(\.scenePhase)` 監視
   - `.background` 検知 → `gameManager.handleBackground()`
   - 対応要件: REQ-26
