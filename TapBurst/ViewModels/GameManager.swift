@@ -37,8 +37,6 @@ final class GameManager {
     private let countdownStart = 3
     private let finishDuration: TimeInterval = 1.5
     private let maxShakeAmplitude: CGFloat = 5.0
-    private let shakeFrequencyX: Double = 12.0
-    private let shakeFrequencyY: Double = 15.6
     private let tapRateNormalizationUpperBound = 20.0
     private let flashInterval: TimeInterval = 0.7
     private let flashPeakOpacity = 0.3
@@ -268,8 +266,8 @@ final class GameManager {
         let shakeAmplitude = maxShakeAmplitude * CGFloat(tapRateFactor * timeFactor)
 
         shakeOffset = CGSize(
-            width: CGFloat(sin(elapsed * shakeFrequencyX)) * shakeAmplitude,
-            height: CGFloat(sin(elapsed * shakeFrequencyY)) * shakeAmplitude * 0.6
+            width: CGFloat.random(in: -shakeAmplitude...shakeAmplitude),
+            height: CGFloat.random(in: -shakeAmplitude...shakeAmplitude)
         )
 
         if currentTimeStage == .intense {
