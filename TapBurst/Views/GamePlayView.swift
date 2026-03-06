@@ -8,8 +8,8 @@ struct GamePlayView: View {
             BackgroundEffectView(timeStage: gameManager.currentTimeStage)
                 .allowsHitTesting(false)
 
-            GameTouchView(particleTier: gameManager.currentCPSTier) { count, positions in
-                gameManager.registerTaps(count: count, positions: positions)
+            GameTouchView(particleTier: gameManager.currentCPSTier) { _, _ in
+                gameManager.registerTap()
             }
 
             FlashOverlayView(opacity: gameManager.flashOpacity)

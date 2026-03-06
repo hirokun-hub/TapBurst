@@ -2,6 +2,7 @@ import Observation
 import QuartzCore
 import SwiftUI
 import UIKit
+import Darwin
 
 @MainActor
 @Observable
@@ -28,12 +29,20 @@ final class GameManager {
 
     private var displayLink: CADisplayLink?
     private var countdownTimer: Timer?
+    private var finishTransitionWorkItem: DispatchWorkItem?
     private var lastFlashTime: TimeInterval = 0.0
 
     private let gameDuration: TimeInterval = 10.0
+    private let minimumTapInterval: TimeInterval = 1.0 / 60.0
     private let countdownStart = 3
-    private let shakeAmplitude: CGFloat = 3.0
+    private let finishDuration: TimeInterval = 1.5
+    private let maxShakeAmplitude: CGFloat = 5.0
+    private let shakeFrequencyX: Double = 12.0
+    private let shakeFrequencyY: Double = 15.6
+    private let tapRateNormalizationUpperBound = 20.0
     private let flashInterval: TimeInterval = 0.7
+    private let flashPeakOpacity = 0.3
+    private let flashFadeDuration: TimeInterval = 0.25
     private let invalidShakeAmplitude: CGFloat = 2.0
 
     init(
@@ -119,15 +128,19 @@ final class GameManager {
         }
     }
 
-    func registerTaps(count: Int, positions _: [CGPoint]) {
-        guard phase == .playing, count > 0, var session else {
+    func registerTap() {
+        guard phase == .playing, var session else {
             return
         }
 
         let now = CACurrentMediaTime()
+        guard now - session.lastValidTapTime >= minimumTapInterval else {
+            return
+        }
 
-        session.score += count
-        session.tapTimestamps.append(contentsOf: Array(repeating: now, count: count))
+        session.score += 1
+        session.lastValidTapTime = now
+        session.tapTimestamps.append(now)
         pruneOldTimestamps(in: &session, now: now)
 
         currentCPS = session.tapTimestamps.count
@@ -226,8 +239,8 @@ final class GameManager {
             playedAt: Date()
         )
 
-        phase = .results
-        self.session = nil
+        phase = .finish
+        self.session = session
         remainingTime = 0.0
         currentCPS = 0
         currentTimeStage = .calm
@@ -236,25 +249,40 @@ final class GameManager {
         resetEffects()
 
         audioService.playFinish()
+
+        let transitionWorkItem = DispatchWorkItem { [weak self] in
+            guard let self, self.phase == .finish else {
+                return
+            }
+            self.phase = .results
+            self.session = nil
+        }
+        finishTransitionWorkItem = transitionWorkItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + finishDuration, execute: transitionWorkItem)
     }
 
     private func updateEffects(elapsed: TimeInterval) {
-        if currentTimeStage == .intense {
-            shakeOffset = CGSize(
-                width: CGFloat.random(in: -shakeAmplitude...shakeAmplitude),
-                height: CGFloat.random(in: -shakeAmplitude...shakeAmplitude)
-            )
+        let tapRateFactor = min(1.0, Double(currentCPS) / tapRateNormalizationUpperBound)
+        let normalizedElapsed = min(1.0, max(0.0, elapsed / gameDuration))
+        let timeFactor = pow(normalizedElapsed, 3.0)
+        let shakeAmplitude = maxShakeAmplitude * CGFloat(tapRateFactor * timeFactor)
 
+        shakeOffset = CGSize(
+            width: CGFloat(sin(elapsed * shakeFrequencyX)) * shakeAmplitude,
+            height: CGFloat(sin(elapsed * shakeFrequencyY)) * shakeAmplitude * 0.6
+        )
+
+        if currentTimeStage == .intense {
             if elapsed - lastFlashTime >= flashInterval {
-                flashOpacity = 0.3
                 lastFlashTime = elapsed
-            } else {
-                flashOpacity = max(0.0, flashOpacity - 0.02)
             }
+
+            let timeSinceFlash = elapsed - lastFlashTime
+            let fadeProgress = min(1.0, max(0.0, timeSinceFlash / flashFadeDuration))
+            flashOpacity = flashPeakOpacity * (1.0 - fadeProgress)
             return
         }
 
-        shakeOffset = .zero
         flashOpacity = 0.0
     }
 
@@ -268,6 +296,8 @@ final class GameManager {
         displayLink = nil
         countdownTimer?.invalidate()
         countdownTimer = nil
+        finishTransitionWorkItem?.cancel()
+        finishTransitionWorkItem = nil
     }
 
     private func resetEffects() {
