@@ -8,7 +8,10 @@ struct GamePlayView: View {
             BackgroundEffectView(timeStage: gameManager.currentTimeStage)
                 .allowsHitTesting(false)
 
-            GameTouchView(particleTier: gameManager.currentCPSTier) { _, _ in
+            GameTouchView(
+                phase: gameManager.phase,
+                particleTier: gameManager.currentCPSTier
+            ) { _ in
                 gameManager.registerTap()
             }
 

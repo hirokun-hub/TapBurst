@@ -150,18 +150,18 @@
         }
       }
     },
-    "results.cps" : {
+    "finish.title" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "CPS"
+            "value" : "FINISH!"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "秒速平均"
+            "value" : "FINISH!"
           }
         }
       }
@@ -178,22 +178,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ホームに戻る"
-          }
-        }
-      }
-    },
-    "results.max_touches" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Max Simultaneous"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "最大同時タッチ"
           }
         }
       }

@@ -4,8 +4,9 @@ import UIKit
 struct ResultsView: View {
     @Bindable var gameManager: GameManager
 
-    private static let sectionSpacing: CGFloat = 16
+    private static let heroSpacing: CGFloat = 18
     private static let buttonSpacing: CGFloat = 14
+    private static let contentSpacing: CGFloat = 28
 
     var body: some View {
         ZStack {
@@ -21,76 +22,100 @@ struct ResultsView: View {
 
     @ViewBuilder
     private func content(result: ScoreResult) -> some View {
-        HStack(alignment: .top, spacing: 32) {
-            VStack(spacing: Self.sectionSpacing) {
-                metricRow(
-                    label: String(localized: "results.score"),
-                    value: "\(result.score)",
-                    sortPriority: 8
-                )
+        HStack(alignment: .center, spacing: Self.contentSpacing) {
+            VStack(alignment: .leading, spacing: Self.heroSpacing) {
+                Text(String(localized: "results.score"))
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.82))
+                    .accessibilityHidden(true)
 
-                metricRow(
-                    label: String(localized: "a11y.results.title_label"),
-                    value: result.title.localizedName,
-                    sortPriority: 7
-                )
+                Text("\(result.score)")
+                    .font(.system(size: 112, weight: .black, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                    .accessibilityHidden(true)
+
+                Text(result.title.localizedName)
+                    .font(.system(size: 40, weight: .heavy, design: .rounded))
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
+                    .padding(.horizontal, 22)
+                    .padding(.vertical, 12)
+                    .background(.white.opacity(0.14), in: Capsule())
+                    .accessibilityHidden(true)
 
                 if result.isNewBest {
                     Text(String(localized: "results.new_best"))
-                        .font(.system(size: 26, weight: .black, design: .rounded))
+                        .font(.system(size: 30, weight: .black, design: .rounded))
                         .foregroundStyle(.yellow)
-                        .accessibilitySortPriority(6)
+                        .accessibilityHidden(true)
                 }
             }
-            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 28)
+            .padding(.vertical, 24)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.black.opacity(0.22), in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text("\(String(localized: "results.score")), \(String(localized: "a11y.results.title_label"))"))
+            .accessibilityValue(Text("\(result.score), \(result.title.localizedName)"))
+            .accessibilityAddTraits(.isStaticText)
+            .accessibilitySortPriority(8)
+
+            if result.isNewBest {
+                Color.clear
+                    .frame(width: 0, height: 0)
+                    .accessibilityLabel(Text(String(localized: "results.new_best")))
+                    .accessibilityAddTraits(.isStaticText)
+                    .accessibilitySortPriority(7)
+            }
 
             VStack(spacing: Self.buttonSpacing) {
-                Button {
-                    gameManager.retry()
-                } label: {
-                    actionButtonLabel(title: String(localized: "results.retry"), color: .orange)
-                }
-                .buttonStyle(.plain)
-                .accessibilityHint(Text(String(localized: "a11y.results.retry_hint")))
-                .accessibilitySortPriority(3)
+                actionButton(
+                    title: String(localized: "results.retry"),
+                    color: .orange,
+                    hint: String(localized: "a11y.results.retry_hint"),
+                    sortPriority: 3,
+                    action: gameManager.retry
+                )
 
-                Button {
+                actionButton(
+                    title: String(localized: "results.share"),
+                    color: .blue,
+                    hint: String(localized: "a11y.results.share_hint"),
+                    sortPriority: 2
+                ) {
                     shareScore(result: result)
-                } label: {
-                    actionButtonLabel(title: String(localized: "results.share"), color: .blue)
                 }
-                .buttonStyle(.plain)
-                .accessibilityHint(Text(String(localized: "a11y.results.share_hint")))
-                .accessibilitySortPriority(2)
 
-                Button {
-                    gameManager.goHome()
-                } label: {
-                    actionButtonLabel(title: String(localized: "results.go_home"), color: .gray)
-                }
-                .buttonStyle(.plain)
-                .accessibilityHint(Text(String(localized: "a11y.results.home_hint")))
-                .accessibilitySortPriority(1)
+                actionButton(
+                    title: String(localized: "results.go_home"),
+                    color: .gray,
+                    hint: String(localized: "a11y.results.home_hint"),
+                    sortPriority: 1,
+                    action: gameManager.goHome
+                )
             }
-            .frame(minWidth: 200, idealWidth: 240, maxWidth: 280)
+            .padding(20)
+            .frame(minWidth: 220, idealWidth: 250, maxWidth: 280)
+            .background(.black.opacity(0.22), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
         }
     }
 
-    private func metricRow(label: String, value: String, sortPriority: Double) -> some View {
-        HStack {
-            Text(label)
-                .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundStyle(.white.opacity(0.9))
-            Spacer()
-            Text(value)
-                .font(.system(size: 36, weight: .black, design: .rounded))
-                .monospacedDigit()
-                .foregroundStyle(.white)
+    private func actionButton(
+        title: String,
+        color: Color,
+        hint: String,
+        sortPriority: Double,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            actionButtonLabel(title: title, color: color)
         }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(label))
-        .accessibilityValue(Text(value))
-        .accessibilityAddTraits(.isStaticText)
+        .buttonStyle(.plain)
+        .accessibilityHint(Text(hint))
         .accessibilitySortPriority(sortPriority)
     }
 

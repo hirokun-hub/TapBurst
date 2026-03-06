@@ -19,16 +19,16 @@ struct ContentView: View {
         case .playing:
             GamePlayView(gameManager: gameManager)
         case .finish:
-            finishPlaceholderView
+            if let result = gameManager.result {
+                FinishView(score: result.score)
+            } else {
+                Color.clear
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+            }
         case .results:
             ResultsView(gameManager: gameManager)
         }
-    }
-
-    private var finishPlaceholderView: some View {
-        Color.black
-            .ignoresSafeArea()
-            .allowsHitTesting(false)
     }
 }
 
