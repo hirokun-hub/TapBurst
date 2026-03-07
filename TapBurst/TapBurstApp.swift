@@ -16,8 +16,13 @@ struct TapBurstApp: App {
         WindowGroup {
             ContentView(gameManager: gameManager)
                 .onChange(of: scenePhase) { _, newPhase in
-                    if newPhase == .background {
+                    switch newPhase {
+                    case .background:
                         gameManager.handleBackground()
+                    case .active:
+                        gameManager.handleForeground()
+                    default:
+                        break
                     }
                 }
         }

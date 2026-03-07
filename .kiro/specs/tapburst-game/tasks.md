@@ -104,7 +104,13 @@
 - [x] **T-020** `🧪 TDD` `ScoreStore.swift` を実装
   - `bestScore` computed property（UserDefaults wrapper）
   - `updateIfNeeded(score:) -> Bool`
+  - `todayBestScore` computed property（保存日付が今日でなければ0を返す）
+  - `updateTodayIfNeeded(score:) -> Bool`
+  - `resetAll()` — bestScore, todayBestScore, todayBestDate の3キーを削除
+  - `dateProvider: () -> Date` init引数（テスト時の日付制御用）
   - テスト: 高スコア時にtrue + 更新、低スコア時にfalse + 据え置き、初期値0
+  - テスト: todayBestScore初期値0、高スコア更新、低スコア不更新、日付跨ぎリセット
+  - テスト: resetAll後に両スコア0、resetAll後の再更新可能
   - 対応要件: REQ-20, REQ-22, NFR-11, NFR-12
 - [x] **T-021** `HapticsService.swift` を実装
   - `UIImpactFeedbackGenerator(style: .light)`
@@ -156,7 +162,9 @@
   - 全プロパティ定義（phase, session, result, remainingTime, currentCPS, etc.）
   - 全定数定義（gameDuration, countdownStart, shakeAmplitude, flashInterval, invalidShakeAmplitude）
   - サービス依存（ScoreStore, AudioService, HapticsService）
-  - `bestScore` 初期ロード
+  - `bestScore` / `todayBestScore` 初期ロード
+  - `resetScores()` — scoreStore.resetAll() + 表示用プロパティリセット
+  - `handleForeground()` — ホーム画面状態で todayBestScore を再取得（日付跨ぎ対応）
   - 対応要件: —（基盤）
 - [x] **T-041** カウントダウンロジックを実装
   - `startGame()` — phase → .countdown, `UIApplication.shared.isIdleTimerDisabled = true`, Timer.scheduledTimer(1秒間隔, クロージャ+[weak self])
@@ -189,13 +197,14 @@
 - [x] **T-046** ゲーム終了・結果生成を実装
   - `endGame()` — CADisplayLink停止, isIdleTimerDisabled = false
   - `ScoreResult` 生成（score, cps, maxSimultaneousTouches, title, isNewBest, playedAt）
-  - `ScoreStore.updateIfNeeded(score:)` 呼び出し
+  - `ScoreStore.updateIfNeeded(score:)` + `updateTodayIfNeeded(score:)` 呼び出し
+  - `bestScore` / `todayBestScore` 再取得
   - `phase = .results`
   - `audioService.playFinish()`
   - 対応要件: REQ-9, REQ-16, REQ-17, REQ-20, REQ-22
 - [x] **T-047** リトライ・ホーム遷移を実装
   - `retry()` — スコアリセット → `startGame()` 呼び出し
-  - `goHome()` — `phase = .home`
+  - `goHome()` — `phase = .home`, `todayBestScore` 再取得（日付跨ぎ対応）
   - 対応要件: REQ-18, REQ-19
 - [x] **T-048** バックグラウンド移行処理を実装
   - `handleBackground()` — `.countdown`/`.playing` フェーズのみ実行（guard）、セッション破棄, CADisplayLink停止, Timer停止, phase = .home
@@ -236,8 +245,12 @@
 ### 5b: 画面 / Screens
 
 - [x] **T-060** `HomeView.swift` を実装
-  - STARTボタン → `gameManager.startGame()`
-  - 自己ベスト表示 ← `gameManager.bestScore`
+  - 2カラム HStack レイアウト（左: タイトル+スコアパネル、右: STARTボタン）
+  - タイトル: 白テキスト + オレンジグロー shadow
+  - スコアパネル: 歴代ベスト（+称号名）、今日のベスト、差分テキスト（条件付き）
+  - 未プレイ時は「---」表示
+  - リセットボタン（パネル外下部）→ confirmationDialog → `gameManager.resetScores()`
+  - STARTボタン: `.phaseAnimator` パルスアニメーション（1.0↔1.04）
   - VoiceOverアクセシビリティ（labels, values, hints, traits, reading order）
   - 対応要件: REQ-1, REQ-21, NFR-13
 - [x] **T-061** `CountdownView.swift` を実装
@@ -281,6 +294,7 @@
 - [x] **T-071** `TapBurstApp.swift` を修正
   - `@Environment(\.scenePhase)` 監視
   - `.background` 検知 → `gameManager.handleBackground()`
+  - `.active` 検知 → `gameManager.handleForeground()`（日付跨ぎ時の todayBestScore 再取得）
   - 対応要件: REQ-26
 
 ---
@@ -290,9 +304,9 @@
 > design.md §12 対応
 
 - [x] **T-080** `Localizable.xcstrings` に全キーを登録
-  - UI文言キー: `home.start`, `home.best_score`, `countdown.ready`, `game.tap_invalid`, `results.score`, `results.cps`, `results.max_touches`, `results.new_best`, `results.retry`, `results.share`, `results.go_home`
+  - UI文言キー: `home.start`, `home.best_score`, `home.today_best`, `home.until_new_best %lld`, `home.reset_confirmation_title`, `home.reset_all`, `countdown.ready`, `game.tap_invalid`, `results.score`, `results.cps`, `results.max_touches`, `results.new_best`, `results.retry`, `results.share`, `results.go_home`
   - 称号キー: `title.first_steps` 〜 `title.god_tier`（10件）
-  - A11yキー: `a11y.home.start_hint`, `a11y.results.title_label`, `a11y.results.retry_hint`, `a11y.results.share_hint`, `a11y.results.home_hint`
+  - A11yキー: `a11y.home.start_hint`, `a11y.home.reset_label`, `a11y.home.reset_hint`, `a11y.results.title_label`, `a11y.results.retry_hint`, `a11y.results.share_hint`, `a11y.results.home_hint`
   - 日本語・英語の2言語分
   - 対応要件: NFR-5
 
@@ -366,7 +380,7 @@ Phase 9 (T-100〜T-112) ─── 最後 ───→ 全Phase完了後
 | T-013 | CPSTier.swift | 3段階の境界値（6パターン） |
 | T-014 | ParticleConfig.swift | 3段階のパラメータ正確性 |
 | T-015 | PitchConfig.swift | 3段階のピッチ値正確性 |
-| T-020 | ScoreStore.swift | 高スコア更新・低スコア据え置き・初期値 |
+| T-020 | ScoreStore.swift | 高スコア更新・低スコア据え置き・初期値・todayBest初期値/更新/不更新/日付跨ぎ・resetAll |
 
 テストファイル構成:
 - `TapBurstTests/ModelsTests.swift` — T-010〜T-015

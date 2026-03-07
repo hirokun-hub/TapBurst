@@ -22,6 +22,7 @@ final class GameManager {
     var invalidTapOverlayOpacity: Double = 0.0
 
     var bestScore: Int = 0
+    var todayBestScore: Int = 0
 
     private let scoreStore: ScoreStore
     private let audioService: AudioService
@@ -52,6 +53,7 @@ final class GameManager {
         self.audioService = audioService
         self.hapticsService = hapticsService
         bestScore = scoreStore.bestScore
+        todayBestScore = scoreStore.todayBestScore
     }
 
     convenience init() {
@@ -161,7 +163,14 @@ final class GameManager {
         phase = .home
         session = nil
         result = nil
+        todayBestScore = scoreStore.todayBestScore
         resetEffects()
+    }
+
+    func resetScores() {
+        scoreStore.resetAll()
+        bestScore = 0
+        todayBestScore = 0
     }
 
     func handleBackground() {
@@ -180,6 +189,11 @@ final class GameManager {
         currentTimeStage = .calm
         currentCPSTier = .normal
         resetEffects()
+    }
+
+    func handleForeground() {
+        guard phase == .home else { return }
+        todayBestScore = scoreStore.todayBestScore
     }
 
     private func beginPlaying() {
@@ -229,6 +243,8 @@ final class GameManager {
         let score = session.score
         let isNewBest = scoreStore.updateIfNeeded(score: score)
         bestScore = scoreStore.bestScore
+        scoreStore.updateTodayIfNeeded(score: score)
+        todayBestScore = scoreStore.todayBestScore
 
         result = ScoreResult(
             score: score,
