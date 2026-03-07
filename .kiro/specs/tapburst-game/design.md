@@ -1,6 +1,6 @@
 # TapBurst 設計書 / Design Document
 
-> 対応要件定義書 / Requirements: [requirements.md](./requirements.md) v1.5
+> 対応要件定義書 / Requirements: [requirements.md](./requirements.md) v1.7
 
 ---
 
@@ -267,18 +267,28 @@ Score range → title mapping from Appendix A. The title table and thresholds ar
 
 ```swift
 struct TitleDefinition {
+    let key: String
     let localizedNameKey: String.LocalizationValue
     let scoreRange: ClosedRange<Int>
 
-    // Title table: constants localized to this type
+    private init(key: String, scoreRange: ClosedRange<Int>) {
+        self.key = key
+        self.localizedNameKey = String.LocalizationValue(key)
+        self.scoreRange = scoreRange
+    }
+
+    // Title table (10 tiers): constants localized to this type
     static let allTitles: [TitleDefinition] = [
-        TitleDefinition(localizedNameKey: "title.warming_up",  scoreRange: 0...49),
-        TitleDefinition(localizedNameKey: "title.not_bad",     scoreRange: 50...99),
-        TitleDefinition(localizedNameKey: "title.speed_star",  scoreRange: 100...199),
-        TitleDefinition(localizedNameKey: "title.machine_gun", scoreRange: 200...299),
-        TitleDefinition(localizedNameKey: "title.sonic",       scoreRange: 300...399),
-        TitleDefinition(localizedNameKey: "title.beyond_human",scoreRange: 400...499),
-        TitleDefinition(localizedNameKey: "title.god_tier",    scoreRange: 500...Int.max),
+        TitleDefinition(key: "title.first_steps",    scoreRange: 0...59),
+        TitleDefinition(key: "title.getting_there",  scoreRange: 60...99),
+        TitleDefinition(key: "title.speed_star",     scoreRange: 100...134),
+        TitleDefinition(key: "title.rush_mode",      scoreRange: 135...159),
+        TitleDefinition(key: "title.machine_gun",    scoreRange: 160...184),
+        TitleDefinition(key: "title.burst_master",   scoreRange: 185...209),
+        TitleDefinition(key: "title.sonic",          scoreRange: 210...249),
+        TitleDefinition(key: "title.overdrive",      scoreRange: 250...299),
+        TitleDefinition(key: "title.limit_breaker",  scoreRange: 300...349),
+        TitleDefinition(key: "title.god_tier",       scoreRange: 350...Int.max),
     ]
 
     var localizedName: String {
@@ -1348,12 +1358,15 @@ Uses Xcode's String Catalog (`Localizable.xcstrings`). Supports Japanese and Eng
 | `results.retry` | もう1回 | Retry |
 | `results.share` | シェア | Share |
 | `results.go_home` | ホームに戻る | Home |
-| `title.warming_up` | ウォーミングアップ | Warming Up |
-| `title.not_bad` | なかなかやるね | Not Bad |
+| `title.first_steps` | スタートダッシュ | First Steps |
+| `title.getting_there` | いい調子 | Getting There |
 | `title.speed_star` | スピードスター | Speed Star |
+| `title.rush_mode` | ラッシュモード | Rush Mode |
 | `title.machine_gun` | マシンガンフィンガー | Machine Gun Finger |
+| `title.burst_master` | バーストマスター | Burst Master |
 | `title.sonic` | 音速の指先 | Sonic Fingertips |
-| `title.beyond_human` | 人間やめてる | Beyond Human |
+| `title.overdrive` | オーバードライブ | Overdrive |
+| `title.limit_breaker` | リミットブレイカー | Limit Breaker |
 | `title.god_tier` | 神の領域 | God Tier |
 
 ### アクセシビリティ仕様 / Accessibility Specification (NFR-13)

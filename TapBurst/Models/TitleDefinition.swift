@@ -1,17 +1,27 @@
 import Foundation
 
 struct TitleDefinition {
+    let key: String
     let localizedNameKey: String.LocalizationValue
     let scoreRange: ClosedRange<Int>
 
+    private init(key: String, scoreRange: ClosedRange<Int>) {
+        self.key = key
+        self.localizedNameKey = String.LocalizationValue(key)
+        self.scoreRange = scoreRange
+    }
+
     static let allTitles: [TitleDefinition] = [
-        TitleDefinition(localizedNameKey: "title.warming_up", scoreRange: 0...49),
-        TitleDefinition(localizedNameKey: "title.not_bad", scoreRange: 50...99),
-        TitleDefinition(localizedNameKey: "title.speed_star", scoreRange: 100...159),
-        TitleDefinition(localizedNameKey: "title.machine_gun", scoreRange: 160...219),
-        TitleDefinition(localizedNameKey: "title.sonic", scoreRange: 220...289),
-        TitleDefinition(localizedNameKey: "title.beyond_human", scoreRange: 290...369),
-        TitleDefinition(localizedNameKey: "title.god_tier", scoreRange: 370...Int.max),
+        TitleDefinition(key: "title.first_steps", scoreRange: 0...59),
+        TitleDefinition(key: "title.getting_there", scoreRange: 60...99),
+        TitleDefinition(key: "title.speed_star", scoreRange: 100...134),
+        TitleDefinition(key: "title.rush_mode", scoreRange: 135...159),
+        TitleDefinition(key: "title.machine_gun", scoreRange: 160...184),
+        TitleDefinition(key: "title.burst_master", scoreRange: 185...209),
+        TitleDefinition(key: "title.sonic", scoreRange: 210...249),
+        TitleDefinition(key: "title.overdrive", scoreRange: 250...299),
+        TitleDefinition(key: "title.limit_breaker", scoreRange: 300...349),
+        TitleDefinition(key: "title.god_tier", scoreRange: 350...Int.max),
     ]
 
     var localizedName: String {

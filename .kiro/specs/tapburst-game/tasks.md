@@ -1,7 +1,7 @@
 # TapBurst MVP 実装タスクリスト / Implementation Task List
 
-> 対応設計書 / Design: [design.md](./design.md) v1.2
-> 対応要件定義書 / Requirements: [requirements.md](./requirements.md) v1.5
+> 対応設計書 / Design: [design.md](./design.md) v1.7
+> 対応要件定義書 / Requirements: [requirements.md](./requirements.md) v1.7
 
 ---
 
@@ -57,10 +57,11 @@
   - テスト: 4つのcaseが存在することの確認
   - 対応要件: —（基盤型）
 - [x] **T-011** `🧪 TDD` `TitleDefinition.swift` を実装
-  - `allTitles` 配列（7段階の称号テーブル）
+  - `key` プロパティ（ローカライゼーションキー文字列）+ `localizedNameKey` は `key` から導出
+  - `allTitles` 配列（10段階の称号テーブル）
   - `title(for:)` スコア→称号マッピング
   - `localizedName` プロパティ
-  - テスト: 全境界値テスト（0, 49, 50, 99, 100, 199, 200, 299, 300, 399, 400, 499, 500, 999）
+  - テスト: 全20境界値で `key` が期待キーと一致することを検証
   - テスト: 全スコア範囲がギャップなくカバーされていること
   - 対応要件: REQ-17, Appendix A
 - [x] **T-012** `🧪 TDD` `TimeStage.swift` を実装
@@ -290,7 +291,7 @@
 
 - [x] **T-080** `Localizable.xcstrings` に全キーを登録
   - UI文言キー: `home.start`, `home.best_score`, `countdown.ready`, `game.tap_invalid`, `results.score`, `results.cps`, `results.max_touches`, `results.new_best`, `results.retry`, `results.share`, `results.go_home`
-  - 称号キー: `title.warming_up` 〜 `title.god_tier`（7件）
+  - 称号キー: `title.first_steps` 〜 `title.god_tier`（10件）
   - A11yキー: `a11y.home.start_hint`, `a11y.results.title_label`, `a11y.results.retry_hint`, `a11y.results.share_hint`, `a11y.results.home_hint`
   - 日本語・英語の2言語分
   - 対応要件: NFR-5
@@ -360,7 +361,7 @@ Phase 9 (T-100〜T-112) ─── 最後 ───→ 全Phase完了後
 | タスク | ファイル | テスト観点 |
 |--------|---------|-----------|
 | T-010 | GamePhase.swift | 4つのcaseが存在することの確認 |
-| T-011 | TitleDefinition.swift | 7段階の境界値（14パターン）+ ギャップなしカバー |
+| T-011 | TitleDefinition.swift | 10段階の境界値（20パターン）+ キー一致検証 + ギャップなしカバー |
 | T-012 | TimeStage.swift | 3段階の境界値（6パターン） |
 | T-013 | CPSTier.swift | 3段階の境界値（6パターン） |
 | T-014 | ParticleConfig.swift | 3段階のパラメータ正確性 |

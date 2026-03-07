@@ -17,11 +17,33 @@ struct ModelsTests {
 
     @Test("V2-013: TitleDefinition boundary mapping")
     func titleDefinition_boundaryValues() {
-        let boundaryScores = [0, 49, 50, 99, 100, 159, 160, 219, 220, 289, 290, 369, 370, 600]
+        let expectations: [(score: Int, expectedKey: String)] = [
+            (0, "title.first_steps"),
+            (59, "title.first_steps"),
+            (60, "title.getting_there"),
+            (99, "title.getting_there"),
+            (100, "title.speed_star"),
+            (134, "title.speed_star"),
+            (135, "title.rush_mode"),
+            (159, "title.rush_mode"),
+            (160, "title.machine_gun"),
+            (184, "title.machine_gun"),
+            (185, "title.burst_master"),
+            (209, "title.burst_master"),
+            (210, "title.sonic"),
+            (249, "title.sonic"),
+            (250, "title.overdrive"),
+            (299, "title.overdrive"),
+            (300, "title.limit_breaker"),
+            (349, "title.limit_breaker"),
+            (350, "title.god_tier"),
+            (600, "title.god_tier"),
+        ]
 
-        for score in boundaryScores {
+        for (score, expectedKey) in expectations {
             let title = TitleDefinition.title(for: score)
             #expect(title.scoreRange.contains(score))
+            #expect(title.key == expectedKey)
             #expect(!title.localizedName.isEmpty)
         }
     }
@@ -43,7 +65,7 @@ struct ModelsTests {
             #expect(current.upperBound + 1 == next.lowerBound)
         }
 
-        let sampleScores = [0, 25, 49, 50, 75, 99, 100, 130, 159, 160, 190, 219, 220, 250, 289, 290, 330, 369, 370, 600, 10_000]
+        let sampleScores = [0, 30, 59, 60, 80, 99, 100, 120, 134, 135, 150, 159, 160, 175, 184, 185, 200, 209, 210, 230, 249, 250, 280, 299, 300, 330, 349, 350, 600, 10_000]
         for score in sampleScores {
             let hitCount = TitleDefinition.allTitles.filter { $0.scoreRange.contains(score) }.count
             #expect(hitCount == 1)
