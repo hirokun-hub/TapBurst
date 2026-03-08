@@ -145,12 +145,8 @@ struct ResultsView: View {
 
     @MainActor
     private func beginShareFlow() {
-        if gameManager.playerName == nil {
-            shouldResumeShareAfterDismiss = true
-            showingPlayerNameInput = true
-            return
-        }
-        shareScoreIfPossible()
+        shouldResumeShareAfterDismiss = true
+        showingPlayerNameInput = true
     }
 
     @MainActor
@@ -164,21 +160,27 @@ struct ResultsView: View {
 
     @MainActor
     private func handlePlayerNameDismiss() {
-        guard shouldResumeShareAfterDismiss else {
+        defer {
             playerNameSubmission = nil
+        }
+
+        guard shouldResumeShareAfterDismiss else {
+            return
+        }
+        shouldResumeShareAfterDismiss = false
+
+        switch playerNameSubmission {
+        case .save(let name):
+            gameManager.savePlayerName(name)
+        case .skip:
+            break
+        case nil:
             return
         }
 
-        defer {
-            shouldResumeShareAfterDismiss = false
-            playerNameSubmission = nil
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            shareScoreIfPossible()
         }
-
-        if case let .save(name) = playerNameSubmission {
-            gameManager.savePlayerName(name)
-        }
-
-        shareScoreIfPossible()
     }
 }
 

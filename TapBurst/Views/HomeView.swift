@@ -208,12 +208,8 @@ struct HomeView: View {
 
     @MainActor
     private func beginShareFlow(target: ShareTarget) {
-        if gameManager.playerName == nil {
-            pendingShareTarget = target
-            showingPlayerNameInput = true
-            return
-        }
-        shareScore(target: target)
+        pendingShareTarget = target
+        showingPlayerNameInput = true
     }
 
     @MainActor
@@ -250,21 +246,27 @@ struct HomeView: View {
 
     @MainActor
     private func handlePlayerNameDismiss() {
-        guard let target = pendingShareTarget else {
+        defer {
             playerNameSubmission = nil
+        }
+
+        guard let target = pendingShareTarget else {
+            return
+        }
+        pendingShareTarget = nil
+
+        switch playerNameSubmission {
+        case .save(let name):
+            gameManager.savePlayerName(name)
+        case .skip:
+            break
+        case nil:
             return
         }
 
-        defer {
-            pendingShareTarget = nil
-            playerNameSubmission = nil
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            shareScore(target: target)
         }
-
-        if case let .save(name) = playerNameSubmission {
-            gameManager.savePlayerName(name)
-        }
-
-        shareScore(target: target)
     }
 }
 

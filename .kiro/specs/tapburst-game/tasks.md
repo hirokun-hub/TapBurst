@@ -250,8 +250,9 @@
 - [x] **T-060** `HomeView.swift` を実装
   - 2カラム HStack レイアウト（左: タイトル+スコアパネル、右: STARTボタン）
   - タイトル: 白テキスト + オレンジグロー shadow
-  - スコアパネル: 歴代ベスト（+称号名）、今日のベスト、差分テキスト（条件付き）
+  - スコアパネル: 歴代ベスト（+称号名+日付）、今日のベスト、差分テキスト（条件付き）
   - 未プレイ時は「---」表示
+  - シェアボタン → 毎回名前入力シート表示（既存名プリフィル）→ 0.35秒遅延後にUIActivityViewController表示（シートdismissタイミング問題回避）
   - リセットボタン（パネル外下部）→ confirmationDialog → `gameManager.resetScores()`
   - STARTボタン: `.phaseAnimator` パルスアニメーション（1.0↔1.04）
   - VoiceOverアクセシビリティ（labels, values, hints, traits, reading order）
@@ -275,7 +276,8 @@
   - スコア, CPS, 最大同時タッチ数, 称号 表示
   - NEW BEST! 表示（`isNewBest` 時）
   - 「もう1回」ボタン → `gameManager.retry()`
-  - 「シェア」ボタン → スコアカード画像生成 → UIActivityViewController
+  - 「シェア」ボタン → 毎回名前入力シート表示（既存名プリフィル）→ 0.35秒遅延後にUIActivityViewController表示（シートdismissタイミング問題回避）
+  - スワイプ閉じ(nil) → シェアキャンセル、スキップ → 既存名維持してシェア
   - 「ホームに戻る」ボタン → `gameManager.goHome()`
   - VoiceOverアクセシビリティ（labels, values, hints, traits, reading order）
   - 対応要件: REQ-16, REQ-17, REQ-18, REQ-19, REQ-22, REQ-23, NFR-13
