@@ -71,22 +71,22 @@
   - テスト: 境界値テスト（0, 4.99→calm, 5.0→warm, 7.99→warm, 8.0→intense, 10.0→intense）
   - 対応要件: REQ-12, Appendix B
 - [x] **T-013** `🧪 TDD` `CPSTier.swift` を実装
-  - enum: `.normal`, `.medium`, `.maximum`
-  - `tier(for:)` CPS→段階マッピング
-  - 閾値: `mediumThreshold = 5`, `maximumThreshold = 15`（型内部に定義）
-  - テスト: 境界値テスト（0, 4→normal, 5→medium, 14→medium, 15→maximum, 100→maximum）
+  - enum: `.t0`〜`.t7`（8段階）（V3-020 で3段階→8段階に拡張）
+  - `tier(for:)` CPS→段階マッピング（閾値: 5/8/11/15/19/23/27）
+  - `baseHSB` プロパティ: 成分別べき指数カーブ（紺→紫→マゼンタ→橙赤）（V3-EscCurve で対数的前倒しに最適化）
+  - テスト: 16境界値パターン + baseHSB t0/t7 値検証
   - 対応要件: REQ-15, Appendix B
 - [x] **T-014** `🧪 TDD` `ParticleConfig.swift` を実装
-  - `birthRate`, `scale`, `lifetime` プロパティ
-  - `.normal`, `.medium`, `.maximum` static定数
+  - `birthRate`, `scale`, `lifetime`, `velocity`, `color` プロパティ
+  - `.t0`〜`.t7` static定数（V3-040 で8段階化）
   - `config(for:)` CPSTier→ParticleConfig マッピング
-  - テスト: 各tierの値が設計書の値と一致すること
+  - テスト: 各tierの値が設計書の値と一致すること（8段階）
   - 対応要件: REQ-10, REQ-15
 - [x] **T-015** `🧪 TDD` `PitchConfig.swift` を実装
-  - `pitchShift` プロパティ
-  - `.normal`(0), `.medium`(200), `.maximum`(500) static定数
+  - `pitchShift` プロパティ（cent単位）
+  - 8段階テーブル: 0/150/280/400/520/630/700/750（V3-EscCurve で750cent上限・減速型に最適化）
   - `config(for:)` CPSTier→PitchConfig マッピング
-  - テスト: 各tierの値が設計書の値と一致すること
+  - テスト: 各tierの値が設計書の値と一致すること（8段階）
   - 対応要件: REQ-13, REQ-15
 - [x] **T-016** `GameSession.swift` を実装
   - `score`, `maxSimultaneousTouches`, `tapTimestamps`, `startTime` プロパティ
@@ -378,9 +378,9 @@ Phase 9 (T-100〜T-112) ─── 最後 ───→ 全Phase完了後
 | T-010 | GamePhase.swift | 4つのcaseが存在することの確認 |
 | T-011 | TitleDefinition.swift | 10段階の境界値（20パターン）+ キー一致検証 + ギャップなしカバー |
 | T-012 | TimeStage.swift | 3段階の境界値（6パターン） |
-| T-013 | CPSTier.swift | 3段階の境界値（6パターン） |
-| T-014 | ParticleConfig.swift | 3段階のパラメータ正確性 |
-| T-015 | PitchConfig.swift | 3段階のピッチ値正確性 |
+| T-013 | CPSTier.swift | 8段階の境界値（16パターン）+ baseHSB t0/t7 値検証 |
+| T-014 | ParticleConfig.swift | 8段階のパラメータ正確性 |
+| T-015 | PitchConfig.swift | 8段階のピッチ値正確性（750cent上限・減速型） |
 | T-020 | ScoreStore.swift | 高スコア更新・低スコア据え置き・初期値・todayBest初期値/更新/不更新/日付跨ぎ・resetAll |
 | V3-060 | CPSTier.swift, CPSTierFilter.swift | baseHSB t0/t7 値検証 + ヒステリシス 6件（上昇/下降/pending解除/tier変更リセット/reset） |
 

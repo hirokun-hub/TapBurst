@@ -145,13 +145,13 @@ struct ModelsTests {
     func pitchConfig_values() {
         let expectedPitchShifts: [(CPSTier, Float)] = [
             (.t0, 0),
-            (.t1, 60),
-            (.t2, 130),
-            (.t3, 220),
-            (.t4, 320),
-            (.t5, 430),
-            (.t6, 540),
-            (.t7, 680),
+            (.t1, 150),
+            (.t2, 280),
+            (.t3, 400),
+            (.t4, 520),
+            (.t5, 630),
+            (.t6, 700),
+            (.t7, 750),
         ]
 
         for (tier, expectedPitchShift) in expectedPitchShifts {
