@@ -159,6 +159,38 @@ struct ModelsTests {
         }
     }
 
+    @Test("V3-EscCurve: PitchConfig interpolation matches keypoints at tier boundaries")
+    func pitchConfig_interpolation_atKeypoints() {
+        let keypoints: [(cps: Int, expectedPitch: Float)] = [
+            (0, 0), (5, 150), (8, 280), (11, 400),
+            (15, 520), (19, 630), (23, 700), (27, 750),
+        ]
+        for (cps, expected) in keypoints {
+            #expect(PitchConfig.interpolatedPitchShift(for: cps) == expected)
+        }
+    }
+
+    @Test("V3-EscCurve: PitchConfig interpolation is smooth between keypoints")
+    func pitchConfig_interpolation_between() {
+        // Midpoint between t0(cps=0,pitch=0) and t1(cps=5,pitch=150) → 75
+        let mid01 = PitchConfig.interpolatedPitchShift(for: 2)
+        #expect(mid01 > 0)
+        #expect(mid01 < 150)
+        #expect(abs(mid01 - 60) < 1) // 2/5 * 150 = 60
+
+        // CPS 10 is between t2(cps=8,pitch=280) and t3(cps=11,pitch=400)
+        let mid23 = PitchConfig.interpolatedPitchShift(for: 10)
+        #expect(mid23 > 280)
+        #expect(mid23 < 400)
+        #expect(abs(mid23 - 360) < 1) // 2/3 * 120 + 280 = 360
+    }
+
+    @Test("V3-EscCurve: PitchConfig interpolation clamps at boundaries")
+    func pitchConfig_interpolation_clamp() {
+        #expect(PitchConfig.interpolatedPitchShift(for: -5) == 0)
+        #expect(PitchConfig.interpolatedPitchShift(for: 50) == 750)
+    }
+
     @Test("V3-BG: CPSTier.baseHSB t0 returns deep indigo")
     func cpsTier_baseHSB_t0() {
         let hsb = CPSTier.t0.baseHSB

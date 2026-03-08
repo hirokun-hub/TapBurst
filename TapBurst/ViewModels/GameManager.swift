@@ -166,7 +166,7 @@ final class GameManager {
         updateCPSTierWithHysteresis(rawTier: rawTier, now: now)
         self.session = session
 
-        audioService.playTapSound(tier: currentCPSTier)
+        audioService.playTapSound(cps: currentCPS)
         hapticsService.triggerTapFeedback()
     }
 

@@ -85,8 +85,10 @@
 - [x] **T-015** `🧪 TDD` `PitchConfig.swift` を実装
   - `pitchShift` プロパティ（cent単位）
   - 8段階テーブル: 0/150/280/400/520/630/700/750（V3-EscCurve で750cent上限・減速型に最適化）
-  - `config(for:)` CPSTier→PitchConfig マッピング
-  - テスト: 各tierの値が設計書の値と一致すること（8段階）
+  - `config(for:)` CPSTier→PitchConfig マッピング（離散値）
+  - `interpolatedPitchShift(for cps:)` CPS値からtier境界間を線形補間（連続的ピッチ変化）
+  - AudioService は `interpolatedPitchShift` を使用し、CPS値に応じた滑らかなピッチ遷移を実現
+  - テスト: 各tierの値が設計書の値と一致すること（8段階）+ 補間キーポイント一致・中間値・境界クランプ
   - 対応要件: REQ-13, REQ-15
 - [x] **T-016** `GameSession.swift` を実装
   - `score`, `maxSimultaneousTouches`, `tapTimestamps`, `startTime` プロパティ
@@ -380,7 +382,7 @@ Phase 9 (T-100〜T-112) ─── 最後 ───→ 全Phase完了後
 | T-012 | TimeStage.swift | 3段階の境界値（6パターン） |
 | T-013 | CPSTier.swift | 8段階の境界値（16パターン）+ baseHSB t0/t7 値検証 |
 | T-014 | ParticleConfig.swift | 8段階のパラメータ正確性 |
-| T-015 | PitchConfig.swift | 8段階のピッチ値正確性（750cent上限・減速型） |
+| T-015 | PitchConfig.swift | 8段階のピッチ値正確性（750cent上限・減速型）+ 連続補間（キーポイント一致・中間値・クランプ） |
 | T-020 | ScoreStore.swift | 高スコア更新・低スコア据え置き・初期値・todayBest初期値/更新/不更新/日付跨ぎ・resetAll |
 | V3-060 | CPSTier.swift, CPSTierFilter.swift | baseHSB t0/t7 値検証 + ヒステリシス 6件（上昇/下降/pending解除/tier変更リセット/reset） |
 

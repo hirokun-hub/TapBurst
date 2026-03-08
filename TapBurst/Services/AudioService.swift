@@ -23,7 +23,7 @@ final class AudioService {
         setup()
     }
 
-    func playTapSound(tier: CPSTier) {
+    func playTapSound(cps: Int) {
         guard isEngineReady, let tapBuffer, !tapPlayers.isEmpty else {
             return
         }
@@ -31,7 +31,7 @@ final class AudioService {
         let index = currentPlayerIndex
         currentPlayerIndex = (currentPlayerIndex + 1) % tapPlayerPoolSize
 
-        pitchUnits[index].pitch = PitchConfig.config(for: tier).pitchShift
+        pitchUnits[index].pitch = PitchConfig.interpolatedPitchShift(for: cps)
 
         let player = tapPlayers[index]
         player.scheduleBuffer(tapBuffer, at: nil, options: .interrupts)
