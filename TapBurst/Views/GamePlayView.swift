@@ -5,8 +5,10 @@ struct GamePlayView: View {
 
     var body: some View {
         ZStack {
-            BackgroundEffectView(timeStage: gameManager.currentTimeStage)
-                .allowsHitTesting(false)
+            BackgroundEffectView(
+                timeStage: gameManager.currentTimeStage,
+                cpsTier: gameManager.currentCPSTier
+            )
 
             GameTouchView(
                 phase: gameManager.phase,

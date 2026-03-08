@@ -44,6 +44,10 @@ final class GameManager {
     private let flashFadeDuration: TimeInterval = 0.25
     private let invalidShakeAmplitude: CGFloat = 2.0
 
+    private var reduceMotionFactor: CGFloat {
+        UIAccessibility.isReduceMotionEnabled ? 0.5 : 1.0
+    }
+
     init(
         scoreStore: ScoreStore,
         audioService: AudioService,
@@ -278,8 +282,8 @@ final class GameManager {
     private func updateEffects(elapsed: TimeInterval) {
         let tapRateFactor = min(1.0, Double(currentCPS) / tapRateNormalizationUpperBound)
         let normalizedElapsed = min(1.0, max(0.0, elapsed / gameDuration))
-        let timeFactor = pow(normalizedElapsed, 3.0)
-        let shakeAmplitude = maxShakeAmplitude * CGFloat(tapRateFactor * timeFactor)
+        let timeFactor = 0.18 + 0.82 * pow(normalizedElapsed, 1.6)
+        let shakeAmplitude = maxShakeAmplitude * CGFloat(tapRateFactor * timeFactor) * reduceMotionFactor
 
         shakeOffset = CGSize(
             width: CGFloat.random(in: -shakeAmplitude...shakeAmplitude),

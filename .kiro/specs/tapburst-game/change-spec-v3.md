@@ -479,17 +479,19 @@ C-03 (揺れ改善 + Reduce Motion) ---------- 独立（C-01 とは無関係）
 
 ### Phase V3-B: 視覚演出改善
 
-- [ ] **V3-060** BackgroundEffectView に CPSTier overlay を追加 (C-02)
-  - `cpsTier: CPSTier = .t0` 引数追加
+- [x] **V3-060** BackgroundEffectView に CPSTier overlay を追加 (C-02)
+  - `cpsTier: CPSTier = .t0` 引数追加（デフォルト値付き、GamePlayView 以外は変更不要）
   - TimeStage ベースグラデーション上に CPSTier 連動の overlay レイヤー追加
   - overlay opacity: t0=0.0〜t7=0.35
   - `.animation(.easeInOut(duration: 0.2), value: cpsTier)` で遷移
   - overlay 色は TimeStage に応じて変化（calm: 青白、warm: 紫、intense: 橙赤）
+  - intense ステージのベースグラデーション2色目を HSB Brightness 0.85 以下に修正（`Color(red: 0.85, green: 0.70, blue: 0.12)`）
 
-- [ ] **V3-070** GamePlayView に cpsTier 引数を追加 (C-02)
+- [x] **V3-070** GamePlayView に cpsTier 引数を追加 (C-02)
   - `BackgroundEffectView(timeStage:cpsTier:)` 呼び出しに `gameManager.currentCPSTier` を渡す
+  - BackgroundEffectView 内部で `allowsHitTesting(false)` を適用済みのため、GamePlayView 側の重複修飾子を除去
 
-- [ ] **V3-080** 揺れ timeFactor 改善 + Reduce Motion (C-03)
+- [x] **V3-080** 揺れ timeFactor 改善 + Reduce Motion (C-03)
   - timeFactor 式: `0.18 + 0.82 * pow(normalizedElapsed, 1.6)`
   - `reduceMotionFactor` computed property 追加（Reduce Motion ON 時: 0.5）
   - maxShakeAmplitude: 5.0pt 維持
