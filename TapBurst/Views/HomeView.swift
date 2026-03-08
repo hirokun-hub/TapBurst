@@ -6,11 +6,16 @@ struct HomeView: View {
     @State private var showingResetConfirmation = false
     @State private var showingPlayerNameInput = false
     @State private var playerNameSubmission: PlayerNameInputView.Submission?
-    @State private var shouldResumeShareAfterDismiss = false
+    @State private var pendingShareTarget: ShareTarget?
 
     private let shareService = ShareService()
 
     private static let columnSpacing: CGFloat = 32
+
+    private enum ShareTarget {
+        case allTimeBest
+        case todayBest
+    }
 
     var body: some View {
         ZStack {
@@ -70,12 +75,18 @@ struct HomeView: View {
                             .font(.system(size: 14, weight: .semibold, design: .rounded))
                             .foregroundStyle(.white.opacity(0.5))
                     }
+
+                    if let playedAt = gameManager.bestScoreSnapshot?.playedAt {
+                        Text(playedAt, format: .dateTime.year().month().day())
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.4))
+                    }
                 }
 
                 Spacer()
 
                 if gameManager.bestScore > 0 {
-                    Button(action: beginShareFlow) {
+                    Button(action: { beginShareFlow(target: .allTimeBest) }) {
                         Image(systemName: "square.and.arrow.up")
                             .font(.system(size: 18, weight: .bold))
                             .foregroundStyle(.white)
@@ -89,15 +100,33 @@ struct HomeView: View {
                 }
             }
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(String(localized: "home.today_best"))
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.5))
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(String(localized: "home.today_best"))
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.5))
 
-                Text(todayBestText)
-                    .font(.system(size: 28, weight: .semibold, design: .rounded))
-                    .monospacedDigit()
-                    .foregroundStyle(.white.opacity(0.7))
+                    Text(todayBestText)
+                        .font(.system(size: 28, weight: .semibold, design: .rounded))
+                        .monospacedDigit()
+                        .foregroundStyle(.white.opacity(0.7))
+                }
+
+                Spacer()
+
+                if gameManager.todayBestScore > 0 {
+                    Button(action: { beginShareFlow(target: .todayBest) }) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.white)
+                            .frame(width: 36, height: 36)
+                            .background(.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text(String(localized: "home.share_today_best")))
+                    .accessibilityHint(Text(String(localized: "a11y.home.share_today_best_hint")))
+                    .accessibilitySortPriority(3)
+                }
             }
 
             if showDifference {
@@ -178,45 +207,56 @@ struct HomeView: View {
     }
 
     @MainActor
-    private func beginShareFlow() {
+    private func beginShareFlow(target: ShareTarget) {
         if gameManager.playerName == nil {
-            shouldResumeShareAfterDismiss = true
+            pendingShareTarget = target
             showingPlayerNameInput = true
             return
         }
-        shareBestScore()
+        shareScore(target: target)
     }
 
     @MainActor
-    private func shareBestScore() {
-        guard let snapshot = gameManager.bestScoreSnapshot else {
-            return
+    private func shareScore(target: ShareTarget) {
+        let result: ScoreResult
+        switch target {
+        case .allTimeBest:
+            guard let snapshot = gameManager.bestScoreSnapshot else { return }
+            result = ScoreResult(
+                score: snapshot.score,
+                cps: snapshot.cps,
+                title: TitleDefinition.title(for: snapshot.score),
+                isNewBest: false,
+                playedAt: snapshot.playedAt
+            )
+        case .todayBest:
+            let score = gameManager.todayBestScore
+            guard score > 0 else { return }
+            result = ScoreResult(
+                score: score,
+                cps: Double(score) / 10.0,
+                title: TitleDefinition.title(for: score),
+                isNewBest: false,
+                playedAt: Date()
+            )
         }
-
-        let result = ScoreResult(
-            score: snapshot.score,
-            cps: snapshot.cps,
-            title: TitleDefinition.title(for: snapshot.score),
-            isNewBest: false,
-            playedAt: snapshot.playedAt
-        )
 
         guard let image = generateScorecardImage(result: result, playerName: gameManager.playerName) else {
             return
         }
 
-        shareService.shareScorecard(image: image, score: snapshot.score)
+        shareService.shareScorecard(image: image, score: result.score)
     }
 
     @MainActor
     private func handlePlayerNameDismiss() {
-        guard shouldResumeShareAfterDismiss else {
+        guard let target = pendingShareTarget else {
             playerNameSubmission = nil
             return
         }
 
         defer {
-            shouldResumeShareAfterDismiss = false
+            pendingShareTarget = nil
             playerNameSubmission = nil
         }
 
@@ -224,7 +264,7 @@ struct HomeView: View {
             gameManager.savePlayerName(name)
         }
 
-        shareBestScore()
+        shareScore(target: target)
     }
 }
 

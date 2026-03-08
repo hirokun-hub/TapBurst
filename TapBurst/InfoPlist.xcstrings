@@ -1,18 +1,14 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "NSPhotoLibraryAddUsageDescription" : {
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Scorecard images are saved to your photo library."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "スコアカード画像を写真ライブラリに保存します。"
+            "state" : "new",
+            "value" : "TapBurst"
           }
         }
       }

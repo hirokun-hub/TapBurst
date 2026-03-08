@@ -1,20 +1,15 @@
 import Foundation
-import Photos
 import UIKit
 
 @MainActor
 final class ShareService {
-    enum PhotoLibraryError: Error {
-        case permissionDenied
-        case imageEncodingFailed
-    }
-
     private static let tempFilePrefix = "TapBurst_"
-    private static let tempFileExtension = "png"
+    private static let tempFileExtension = "jpg"
+    private static let jpegCompressionQuality: CGFloat = 0.85
 
     func shareScorecard(image: UIImage, score: Int, from presentingViewController: UIViewController? = nil) {
         guard let presentingViewController = presentingViewController ?? Self.topViewController(),
-              let imageData = image.pngData() else {
+              let imageData = image.jpegData(compressionQuality: Self.jpegCompressionQuality) else {
             return
         }
 
@@ -37,56 +32,6 @@ final class ShareService {
         } catch {
             assertionFailure("Failed to prepare scorecard share file: \(error)")
         }
-    }
-
-    func saveToPhotoLibrary(image: UIImage) async throws {
-        guard let imageData = image.pngData() else {
-            throw PhotoLibraryError.imageEncodingFailed
-        }
-
-        let authorizationStatus = await requestPhotoLibraryPermission()
-        guard authorizationStatus == .authorized else {
-            throw PhotoLibraryError.permissionDenied
-        }
-
-        try await PHPhotoLibrary.shared().performChanges {
-            let request = PHAssetCreationRequest.forAsset()
-            request.addResource(with: .photo, data: imageData, options: nil)
-        }
-    }
-
-    func requestPhotoLibraryPermission() async -> PHAuthorizationStatus {
-        let currentStatus = PHPhotoLibrary.authorizationStatus(for: .addOnly)
-        guard currentStatus == .notDetermined else {
-            return currentStatus
-        }
-
-        return await withCheckedContinuation { continuation in
-            PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
-                continuation.resume(returning: status)
-            }
-        }
-    }
-
-    func presentPhotoLibraryDeniedAlert(from presentingViewController: UIViewController? = nil) {
-        guard let presentingViewController = presentingViewController ?? Self.topViewController() else {
-            return
-        }
-
-        let alertController = UIAlertController(
-            title: String(localized: "photo_library.denied_title"),
-            message: String(localized: "photo_library.denied_message"),
-            preferredStyle: .alert
-        )
-        alertController.addAction(UIAlertAction(title: String(localized: "common.cancel"), style: .cancel))
-        alertController.addAction(UIAlertAction(title: String(localized: "settings.open"), style: .default) { _ in
-            guard let settingsURL = URL(string: UIApplication.openSettingsURLString),
-                  UIApplication.shared.canOpenURL(settingsURL) else {
-                return
-            }
-            UIApplication.shared.open(settingsURL)
-        })
-        presentingViewController.present(alertController, animated: true)
     }
 
     private func cleanupTemporaryScorecards() throws {

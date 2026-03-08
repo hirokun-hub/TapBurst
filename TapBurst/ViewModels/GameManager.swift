@@ -41,6 +41,8 @@ final class GameManager {
     private var finishTransitionWorkItem: DispatchWorkItem?
     private var lastFlashTime: TimeInterval = 0.0
 
+    private var tierFilter = CPSTierFilter()
+
     private let gameDuration: TimeInterval = 10.0
     private let minimumTapInterval: TimeInterval = 1.0 / 60.0
     private let countdownStart = 3
@@ -93,9 +95,11 @@ final class GameManager {
         flashOpacity = 0.0
         invalidTapOverlayOpacity = 0.0
         lastFlashTime = 0.0
+        tierFilter.reset()
 
         countdownNumber = countdownStart
         audioService.playCountdownTick(number: countdownStart)
+        hapticsService.triggerCountdownFeedback()
 
         countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
             guard let self else {
@@ -107,6 +111,7 @@ final class GameManager {
                 let nextNumber = number - 1
                 self.countdownNumber = nextNumber
                 self.audioService.playCountdownTick(number: nextNumber)
+                self.hapticsService.triggerCountdownFeedback()
                 return
             }
 
@@ -114,6 +119,7 @@ final class GameManager {
             self.countdownTimer = nil
             self.countdownNumber = nil
             self.audioService.playGo()
+            self.hapticsService.triggerCountdownFeedback()
             self.beginPlaying()
         }
     }
@@ -156,7 +162,8 @@ final class GameManager {
         pruneOldTimestamps(in: &session, now: now)
 
         currentCPS = session.tapTimestamps.count
-        currentCPSTier = CPSTier.tier(for: currentCPS)
+        let rawTier = CPSTier.tier(for: currentCPS)
+        updateCPSTierWithHysteresis(rawTier: rawTier, now: now)
         self.session = session
 
         audioService.playTapSound(tier: currentCPSTier)
@@ -204,6 +211,7 @@ final class GameManager {
         currentCPS = 0
         currentTimeStage = .calm
         currentCPSTier = .t0
+        tierFilter.reset()
         resetEffects()
     }
 
@@ -220,6 +228,7 @@ final class GameManager {
         currentTimeStage = .calm
         currentCPSTier = .t0
         lastFlashTime = 0.0
+        tierFilter.reset()
         resetEffects()
 
         displayLink?.invalidate()
@@ -246,7 +255,8 @@ final class GameManager {
         pruneOldTimestamps(in: &session, now: now)
         currentCPS = session.tapTimestamps.count
         currentTimeStage = TimeStage.stage(at: elapsed)
-        currentCPSTier = CPSTier.tier(for: currentCPS)
+        let rawTier = CPSTier.tier(for: currentCPS)
+        updateCPSTierWithHysteresis(rawTier: rawTier, now: now)
 
         updateEffects(elapsed: elapsed)
         self.session = session
@@ -279,6 +289,7 @@ final class GameManager {
         currentTimeStage = .calm
         currentCPSTier = .t0
         countdownNumber = nil
+        tierFilter.reset()
         resetEffects()
 
         audioService.playFinish()
@@ -297,7 +308,7 @@ final class GameManager {
     private func updateEffects(elapsed: TimeInterval) {
         let tapRateFactor = min(1.0, Double(currentCPS) / tapRateNormalizationUpperBound)
         let normalizedElapsed = min(1.0, max(0.0, elapsed / gameDuration))
-        let timeFactor = 0.18 + 0.82 * pow(normalizedElapsed, 1.6)
+        let timeFactor = 0.05 + 0.95 * pow(normalizedElapsed, 1.6)
         let shakeAmplitude = maxShakeAmplitude * CGFloat(tapRateFactor * timeFactor) * reduceMotionFactor
 
         shakeOffset = CGSize(
@@ -317,6 +328,21 @@ final class GameManager {
         }
 
         flashOpacity = 0.0
+    }
+
+    private func updateCPSTierWithHysteresis(rawTier: CPSTier, now: TimeInterval) {
+        let previousTier = tierFilter.confirmedTier
+        let changed = tierFilter.update(rawTier: rawTier, now: now)
+        if changed {
+            let newTier = tierFilter.confirmedTier
+            let duration = newTier > previousTier ? 0.14 : 0.26
+            let animation: Animation = newTier > previousTier
+                ? .easeOut(duration: duration)
+                : .easeInOut(duration: duration)
+            withAnimation(animation) {
+                currentCPSTier = newTier
+            }
+        }
     }
 
     private func pruneOldTimestamps(in session: inout GameSession, now: TimeInterval) {

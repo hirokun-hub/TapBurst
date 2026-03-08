@@ -159,6 +159,118 @@ struct ModelsTests {
         }
     }
 
+    @Test("V3-BG: CPSTier.baseHSB t0 returns deep indigo")
+    func cpsTier_baseHSB_t0() {
+        let hsb = CPSTier.t0.baseHSB
+        #expect(hsb.h == 0.64)
+        #expect(hsb.s == 0.55)
+        #expect(hsb.b == 0.26)
+    }
+
+    @Test("V3-BG: CPSTier.baseHSB t7 returns orange-red")
+    func cpsTier_baseHSB_t7() {
+        let hsb = CPSTier.t7.baseHSB
+        #expect(hsb.h == 0.08)
+        #expect(hsb.s == 0.90)
+        #expect(hsb.b == 0.73)
+    }
+
+    // MARK: - CPSTierFilter hysteresis tests
+
+    @Test("V3-BG: CPSTierFilter ignores change before upDelay")
+    func tierFilter_upDelay_notElapsed() {
+        var filter = CPSTierFilter()
+        // First call sets pending
+        let changed1 = filter.update(rawTier: .t1, now: 1.0)
+        #expect(!changed1)
+        #expect(filter.confirmedTier == .t0)
+
+        // Before 150ms - should not confirm
+        let changed2 = filter.update(rawTier: .t1, now: 1.14)
+        #expect(!changed2)
+        #expect(filter.confirmedTier == .t0)
+    }
+
+    @Test("V3-BG: CPSTierFilter confirms upgrade after upDelay")
+    func tierFilter_upDelay_elapsed() {
+        var filter = CPSTierFilter()
+        _ = filter.update(rawTier: .t1, now: 1.0)
+
+        // Past 150ms - should confirm
+        let changed = filter.update(rawTier: .t1, now: 1.16)
+        #expect(changed)
+        #expect(filter.confirmedTier == .t1)
+    }
+
+    @Test("V3-BG: CPSTierFilter uses longer delay for downgrade")
+    func tierFilter_downDelay() {
+        var filter = CPSTierFilter()
+        // Start at t3
+        _ = filter.update(rawTier: .t3, now: 0.0)
+        _ = filter.update(rawTier: .t3, now: 0.15)
+        #expect(filter.confirmedTier == .t3)
+
+        // Request downgrade to t1
+        _ = filter.update(rawTier: .t1, now: 1.0)
+
+        // Before 300ms - should not confirm
+        let changed1 = filter.update(rawTier: .t1, now: 1.29)
+        #expect(!changed1)
+        #expect(filter.confirmedTier == .t3)
+
+        // At 300ms - should confirm
+        let changed2 = filter.update(rawTier: .t1, now: 1.30)
+        #expect(changed2)
+        #expect(filter.confirmedTier == .t1)
+    }
+
+    @Test("V3-BG: CPSTierFilter resets pending when rawTier returns to confirmed")
+    func tierFilter_pendingReset() {
+        var filter = CPSTierFilter()
+        // Set pending to t1
+        _ = filter.update(rawTier: .t1, now: 1.0)
+        #expect(filter.confirmedTier == .t0)
+
+        // Return to t0 - pending should reset
+        let changed = filter.update(rawTier: .t0, now: 1.05)
+        #expect(!changed)
+        #expect(filter.confirmedTier == .t0)
+
+        // New pending to t1 requires full delay from scratch
+        _ = filter.update(rawTier: .t1, now: 1.10)
+        let changed2 = filter.update(rawTier: .t1, now: 1.20)
+        #expect(!changed2) // only 100ms since new pending, not 150ms
+    }
+
+    @Test("V3-BG: CPSTierFilter resets pending when rawTier changes to different tier")
+    func tierFilter_pendingChangesToDifferentTier() {
+        var filter = CPSTierFilter()
+        _ = filter.update(rawTier: .t1, now: 1.0)
+
+        // Change to t2 instead - should reset pending timer
+        _ = filter.update(rawTier: .t2, now: 1.1)
+
+        // 150ms from original t1 pending, but only 50ms from t2 pending
+        let changed = filter.update(rawTier: .t2, now: 1.15)
+        #expect(!changed)
+
+        // Past 150ms from t2 pending
+        let changed2 = filter.update(rawTier: .t2, now: 1.26)
+        #expect(changed2)
+        #expect(filter.confirmedTier == .t2)
+    }
+
+    @Test("V3-BG: CPSTierFilter reset clears state")
+    func tierFilter_reset() {
+        var filter = CPSTierFilter()
+        _ = filter.update(rawTier: .t3, now: 0.0)
+        _ = filter.update(rawTier: .t3, now: 0.15)
+        #expect(filter.confirmedTier == .t3)
+
+        filter.reset()
+        #expect(filter.confirmedTier == .t0)
+    }
+
     @Test("V3-085: ScoreResult stores cps value")
     func scoreResult_storesCpsValue() {
         let result = ScoreResult(

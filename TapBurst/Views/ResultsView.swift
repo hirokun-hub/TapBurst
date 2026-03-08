@@ -4,8 +4,6 @@ import UIKit
 struct ResultsView: View {
     @Bindable var gameManager: GameManager
     @State private var showingPlayerNameInput = false
-    @State private var showingSaveResultAlert = false
-    @State private var saveResultMessage = ""
     @State private var playerNameSubmission: PlayerNameInputView.Submission?
     @State private var shouldResumeShareAfterDismiss = false
 
@@ -34,9 +32,6 @@ struct ResultsView: View {
             )
             .presentationDetents([.medium])
             .presentationDragIndicator(.visible)
-        }
-        .alert(saveResultMessage, isPresented: $showingSaveResultAlert) {
-            Button("OK", role: .cancel) {}
         }
     }
 
@@ -111,15 +106,6 @@ struct ResultsView: View {
                 }
 
                 actionButton(
-                    title: String(localized: "results.save"),
-                    color: .green,
-                    hint: String(localized: "a11y.results.save_hint"),
-                    sortPriority: 2
-                ) {
-                    saveScore(result: result)
-                }
-
-                actionButton(
                     title: String(localized: "results.go_home"),
                     color: .gray,
                     hint: String(localized: "a11y.results.home_hint"),
@@ -174,35 +160,6 @@ struct ResultsView: View {
             return
         }
         shareService.shareScorecard(image: image, score: result.score)
-    }
-
-    private func saveScore(result: ScoreResult) {
-        Task {
-            guard let image = await MainActor.run(body: {
-                generateScorecardImage(result: result, playerName: gameManager.playerName)
-            }) else {
-                await MainActor.run {
-                    saveResultMessage = String(localized: "results.save_failed")
-                    showingSaveResultAlert = true
-                }
-                return
-            }
-
-            do {
-                try await shareService.saveToPhotoLibrary(image: image)
-                await MainActor.run {
-                    saveResultMessage = String(localized: "results.save_success")
-                    showingSaveResultAlert = true
-                }
-            } catch ShareService.PhotoLibraryError.permissionDenied {
-                await shareService.presentPhotoLibraryDeniedAlert()
-            } catch {
-                await MainActor.run {
-                    saveResultMessage = String(localized: "results.save_denied")
-                    showingSaveResultAlert = true
-                }
-            }
-        }
     }
 
     @MainActor

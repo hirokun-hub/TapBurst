@@ -77,6 +77,22 @@
         }
       }
     },
+    "a11y.home.share_today_best_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shares your today's best scorecard"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日のベストのスコアカードを共有します"
+          }
+        }
+      }
+    },
     "a11y.home.start_hint" : {
       "localizations" : {
         "en" : {
@@ -141,22 +157,6 @@
         }
       }
     },
-    "a11y.results.save_hint" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saves your scorecard to Photos"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "スコアカードを写真ライブラリに保存します"
-          }
-        }
-      }
-    },
     "a11y.results.title_label" : {
       "localizations" : {
         "en" : {
@@ -186,22 +186,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "準備して!"
-          }
-        }
-      }
-    },
-    "common.cancel" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancel"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "キャンセル"
           }
         }
       }
@@ -286,22 +270,6 @@
         }
       }
     },
-    "home.start" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "START"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "スタート"
-          }
-        }
-      }
-    },
     "home.share_best" : {
       "localizations" : {
         "en" : {
@@ -314,6 +282,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ベストをシェア"
+          }
+        }
+      }
+    },
+    "home.share_today_best" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share Today's Best"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日のベストをシェア"
+          }
+        }
+      }
+    },
+    "home.start" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "START"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スタート"
           }
         }
       }
@@ -346,54 +346,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "あと %lld で歴代更新"
-          }
-        }
-      }
-    },
-    "photo_library.denied_message" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Allow photo access in Settings to save your scorecard."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "スコアカードを保存するには、設定アプリで写真へのアクセスを許可してください。"
-          }
-        }
-      }
-    },
-    "photo_library.denied_title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photo Access Needed"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "写真へのアクセスが必要です"
-          }
-        }
-      }
-    },
-    "photo_library.open_settings" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open Settings"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "設定を開く"
           }
         }
       }
@@ -538,70 +490,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "スコア"
-          }
-        }
-      }
-    },
-    "results.save" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "保存"
-          }
-        }
-      }
-    },
-    "results.save_denied" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Could not save the scorecard."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "スコアカードを保存できませんでした。"
-          }
-        }
-      }
-    },
-    "results.save_failed" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Could not generate the scorecard. Please try again."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "スコアカードの生成に失敗しました。もう一度お試しください。"
-          }
-        }
-      }
-    },
-    "results.save_success" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saved to Photos."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "写真ライブラリに保存しました。"
           }
         }
       }
@@ -792,22 +680,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "スピードスター"
-          }
-        }
-      }
-    },
-    "settings.open" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open Settings"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "設定を開く"
           }
         }
       }

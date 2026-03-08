@@ -220,9 +220,10 @@
 ### 5a: コンポーネント / Components
 
 - [x] **T-050** `BackgroundEffectView.swift` を実装
-  - `LinearGradient` — TimeStage別の色（calm: 紺〜深青, warm: 紫〜オレンジ, intense: 赤〜黄）
-  - `animation(.easeInOut)` でスムーズ遷移
-  - `RadialGradient` ビネットオーバーレイ（opacity: calm=0, warm=0.3, intense=0.5）
+  - `LinearGradient` — CPSTier 単独制御（baseHSB 8段階: 紺→紫→マゼンタ→橙赤）（V3-060 で改定）
+  - `.id(cpsTier).transition(.opacity)` クロスフェード方式（色相補間回避）
+  - `RadialGradient` ビネットオーバーレイ（TimeStage制御: calm=0, warm=0.3, intense=0.5）
+  - `animation(.easeInOut)` でTimeStage遷移
   - 対応要件: REQ-12
 - [x] **T-051** `FlashOverlayView.swift` を実装
   - `Color.white.opacity(opacity)` — flashOpacity に連動
@@ -381,7 +382,8 @@ Phase 9 (T-100〜T-112) ─── 最後 ───→ 全Phase完了後
 | T-014 | ParticleConfig.swift | 3段階のパラメータ正確性 |
 | T-015 | PitchConfig.swift | 3段階のピッチ値正確性 |
 | T-020 | ScoreStore.swift | 高スコア更新・低スコア据え置き・初期値・todayBest初期値/更新/不更新/日付跨ぎ・resetAll |
+| V3-060 | CPSTier.swift, CPSTierFilter.swift | baseHSB t0/t7 値検証 + ヒステリシス 6件（上昇/下降/pending解除/tier変更リセット/reset） |
 
 テストファイル構成:
-- `TapBurstTests/ModelsTests.swift` — T-010〜T-015
+- `TapBurstTests/ModelsTests.swift` — T-010〜T-015, V3-060
 - `TapBurstTests/ScoreStoreTests.swift` — T-020

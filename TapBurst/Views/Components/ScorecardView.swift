@@ -9,7 +9,6 @@ struct ScorecardView: View {
     static let logoAssetName = "ScorecardLogo"
 
     private static let cornerRadius: CGFloat = 28
-    private static let badgeCornerRadius: CGFloat = 18
 
     var body: some View {
         ZStack {
@@ -50,21 +49,14 @@ struct ScorecardView: View {
                     .foregroundStyle(.white)
 
                 Text(result.title.localizedName)
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .font(.system(size: 36, weight: .bold, design: .rounded))
                     .foregroundStyle(.white.opacity(0.95))
                     .padding(.horizontal, 18)
                     .padding(.vertical, 10)
                     .background(.white.opacity(0.14), in: Capsule())
 
-                Text("CPS \(result.cps.formatted(.number.precision(.fractionLength(1))))")
-                    .font(.system(size: 24, weight: .heavy, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.92))
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(.white.opacity(0.1), in: RoundedRectangle(cornerRadius: Self.badgeCornerRadius, style: .continuous))
-
                 if let playedAt = result.playedAt {
-                    Text(playedAt, format: .dateTime.year().month().day().hour().minute())
+                    Text(playedAt, format: .dateTime.year().month().day())
                         .font(.system(size: 16, weight: .medium, design: .rounded))
                         .foregroundStyle(.white.opacity(0.8))
                         .padding(.top, 4)
@@ -91,7 +83,7 @@ func generateScorecardImage(result: ScoreResult, playerName: String?) -> UIImage
         width: ScorecardView.cardSize.width,
         height: ScorecardView.cardSize.height
     )
-    renderer.scale = UIScreen.main.scale
+    renderer.scale = 2.0
     return renderer.uiImage
 }
 

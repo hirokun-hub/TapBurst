@@ -11,12 +11,13 @@
 | ID | 変更名 | 概要 |
 |----|--------|------|
 | C-01 | CPSTier 8段階化 | 3段階（normal/medium/maximum）→ 8段階（t0〜t7）、ピッチ 0〜+680 cent |
-| C-02 | 背景色 CPSTier overlay | BackgroundEffectView に CPSTier 連動の彩度・輝度オーバーレイを追加 |
+| C-02 | 背景色 CPSTier 単独制御 | BackgroundEffectView を CPSTier 単独グラデーション制御に変更（紺→紫→マゼンタ→橙赤） + ヒステリシス + クロスフェード |
 | C-03 | 揺れ timeFactor 改善 + Reduce Motion | timeFactor の立ち上がり改善 + `UIAccessibility.isReduceMotionEnabled` 対応（maxShakeAmplitude=5.0pt 維持） |
-| C-04 | シェア改善 | PHPhotoLibrary 保存 + 一時ファイル URL 方式への移行 |
-| C-05 | スコアカードデザイン改善 | プレイヤー名・日付フォーマット・称号バッジの追加 |
-| C-06 | ホーム画面シェア導線 | ホーム画面から歴代ベストのスコアカードをシェアできるボタンを追加 |
-| C-07 | 要件定義書 v1.9 更新 | Appendix B 8段階化 + REQ-25/27/28/29, NFR-11/18, E2E-4/9/10/11/12、画面一覧・揺れ方式更新 |
+| C-04 | シェア改善 | 一時ファイル URL 方式への移行（PHPhotoLibrary はシェアシート内の「画像を保存」で代替） |
+| C-05 | スコアカードデザイン改善 | プレイヤー名・日付フォーマット・称号バッジの追加（CPS表示は削除） |
+| C-06 | ホーム画面シェア導線 | ホーム画面から歴代ベスト・今日のベストのスコアカードをシェアできるボタンを追加 + 歴代ベスト日付表示 |
+| C-07 | 要件定義書 v2.0 更新 | Appendix B 8段階化 + REQ-25/27/29, NFR-11/18, E2E-4/9/10、画面一覧・揺れ方式更新。REQ-28/E2E-11/E2E-12 削除（保存ボタン廃止） |
+| C-08 | 保存ボタン削除 + 画像最適化 | 結果画面の保存ボタン削除、PHPhotoLibrary 関連コード削除、スコアカードからCPS削除、画像形式を PNG→JPEG(0.85) に変更 |
 
 ---
 
@@ -423,10 +424,10 @@ C-03 (揺れ改善 + Reduce Motion) ---------- 独立（C-01 とは無関係）
 |---|------|------|
 | TC-01 | ピッチ値は +680 cent を上限とする（+700〜800 cent が実用上限、+1200 以上はチップマンク化） | 専門家レビュー §1.3 |
 | TC-02 | 隣接段階のピッチ差は最低 50 cent 以上を確保する（ゲーム中の実効 JND） | 専門家レビュー §1.2 |
-| TC-03 | 背景色の CPSTier overlay は opacity 0.0〜0.35 の範囲とし、最大輝度は HSB 0.85 以下 | 専門家レビュー §2.5 |
-| TC-04 | CPSTier overlay は tier 変化時のみ更新（毎フレーム直接更新は不要） | 専門家レビュー §2.2 |
-| TC-05 | `Color.mix(with:by:in:)` は iOS 18+ 限定のため使用不可。iOS 17 では `UIColor` + HSB 補間 | 専門家レビュー §2.3 |
-| TC-06 | `drawingGroup()` はシンプルなグラデーション+overlay には不使用 | 専門家レビュー §2.4 |
+| TC-03 | 背景色は CPSTier 単独制御（baseHSB 8段階テーブル）。最大輝度は HSB 0.85 以下。overlay 方式は廃止 | 専門家レビュー 2026-03-08 §6 |
+| TC-04 | CPSTier 変化時は `.id(cpsTier).transition(.opacity)` でクロスフェード（色相補間を回避） | 専門家レビュー 2026-03-08 §7 |
+| TC-05 | CPSTier ヒステリシス: 上昇 150ms / 下降 300ms 維持で確定。CPSTierFilter 構造体でロジック分離 | 専門家レビュー 2026-03-08 §7 |
+| TC-06 | `drawingGroup()` はシンプルなグラデーションには不使用 | 専門家レビュー §2.4 |
 | TC-07 | 揺れ方式はフレームごとランダムを維持（サイン波は V2-022 で不採用確定） | 開発履歴 |
 | TC-08 | maxShakeAmplitude は 5.0pt 維持 | ユーザー確認済み |
 | TC-09 | Reduce Motion 時は揺れ振幅を 50% に軽減（40〜60% の中間値） | Apple HIG + 専門家レビュー §3.3 |
@@ -479,13 +480,23 @@ C-03 (揺れ改善 + Reduce Motion) ---------- 独立（C-01 とは無関係）
 
 ### Phase V3-B: 視覚演出改善
 
-- [x] **V3-060** BackgroundEffectView に CPSTier overlay を追加 (C-02)
-  - `cpsTier: CPSTier = .t0` 引数追加（デフォルト値付き、GamePlayView 以外は変更不要）
-  - TimeStage ベースグラデーション上に CPSTier 連動の overlay レイヤー追加
-  - overlay opacity: t0=0.0〜t7=0.35
-  - `.animation(.easeInOut(duration: 0.2), value: cpsTier)` で遷移
-  - overlay 色は TimeStage に応じて変化（calm: 青白、warm: 紫、intense: 橙赤）
-  - intense ステージのベースグラデーション2色目を HSB Brightness 0.85 以下に修正（`Color(red: 0.85, green: 0.70, blue: 0.12)`）
+- [x] **V3-060** 背景色を CPSTier 単独制御に変更 (C-02 → 専門家レビュー 2026-03-08 改定)
+  - 旧方式（TimeStage ベースグラデーション + CPSTier overlay）を廃止
+  - CPSTier.baseHSB computed property 追加（8段階HSBテーブル: 紺→紫→マゼンタ→橙赤）
+  - gradientColors(for:) で2色導出（topLeading: s-0.06,b-0.08 / bottomTrailing: h-0.02,s+0.04,b+0.08）
+  - `.id(cpsTier).transition(.opacity)` で色相補間を回避（クロスフェード方式）
+  - cpsTier の `.animation` modifier 削除（GameManager の withAnimation で駆動）
+  - vignette（RadialGradient）は TimeStage 制御を維持
+  - overlayColors/overlayOpacity/overlayTransitionDuration 関連コード削除
+  - CPSTierFilter 構造体を新規作成（ヒステリシスロジックをテスト可能な形で分離）
+    - 上昇: 150ms 維持で確定（withAnimation(.easeOut(duration: 0.14))）
+    - 下降: 300ms 維持で確定（withAnimation(.easeInOut(duration: 0.26))）
+    - 同tierなら pending リセット、異なるtierは pending タイマーリセット
+  - GameManager: pendingCPSTier/pendingTierSince → CPSTierFilter に委譲
+  - GameManager: registerTap()/displayLinkFired() の直接代入を updateCPSTierWithHysteresis() に置換
+  - GameManager: startGame()/beginPlaying()/endGame()/handleBackground() で tierFilter.reset()
+  - テスト: baseHSB t0/t7 値検証 + CPSTierFilter ヒステリシス 6件（上昇未達/確定、下降未達/確定、pending解除、tier変更時リセット、reset）
+  - 参照: docs/expert-reviews/2026-03-08-cps-background-color-escalation-review.md
 
 - [x] **V3-070** GamePlayView に cpsTier 引数を追加 (C-02)
   - `BackgroundEffectView(timeStage:cpsTier:)` 呼び出しに `gameManager.currentCPSTier` を渡す
@@ -523,8 +534,8 @@ C-03 (揺れ改善 + Reduce Motion) ---------- 独立（C-01 とは無関係）
   - `requestPhotoLibraryPermission()`: `.addOnly` 認可要求
   - 権限拒否時: 設定アプリ誘導アラート
 
-- [x] **V3-091** `InfoPlist.xcstrings` を新規作成し `NSPhotoLibraryAddUsageDescription` を ja/en ローカライズ (C-04)
-  - `project.pbxproj` の `INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription` 直書きは削除
+- [x] **V3-091** `InfoPlist.xcstrings` から `NSPhotoLibraryAddUsageDescription` を削除 (C-08)
+  - 保存ボタン廃止に伴い PHPhotoLibrary 権限が不要になったため
 
 - [x] **V3-100** ScorecardView にプレイヤー名・CPS・称号バッジを追加 (C-05)
   - プレイヤー名: スコア上部、12文字上限、未設定時は非表示
@@ -548,16 +559,19 @@ C-03 (揺れ改善 + Reduce Motion) ---------- 独立（C-01 とは無関係）
   - `bestScoreSnapshot: BestScoreSnapshot?` — ScoreStore の computed property を委譲
   - `savePlayerName(_:)` — ScoreStore のメソッドを委譲
 
-- [x] **V3-110** ResultsView を ShareService 経由に変更 + 保存ボタン追加 (C-04)
+- [x] **V3-110** ResultsView を ShareService 経由に変更 (C-04/C-08)
   - `shareScore()` を `ShareService.shareScorecard()` 経由に変更
-  - 「保存」ボタンを追加（PHPhotoLibrary 保存）
-  - 画像生成失敗時は `results.save_failed`（専用エラーメッセージ）を表示
+  - 保存ボタン削除（シェアシート内の「画像を保存」で代替）
+  - 結果画面は3ボタン構成（リトライ/シェア/ホーム）
   - 初回シェア時に PlayerNameInputView をシートで表示（`.sheet(onDismiss:)` パターン）
   - ScoreStore の直接参照を廃止し、GameManager 経由に統一
 
 - [x] **V3-120** HomeView にシェア導線を追加 (C-06)
-  - スコアパネル内にシェアアイコンボタン（`bestScore > 0` 時のみ表示）
+  - スコアパネル内に歴代ベストシェアアイコンボタン（`bestScore > 0` 時のみ表示、44x44）
+  - 今日のベストシェアアイコンボタン（`todayBestScore > 0` 時のみ表示、36x36）
+  - ShareTarget enum（`.allTimeBest` / `.todayBest`）で分岐
   - `gameManager.bestScoreSnapshot` から ScoreResult を復元してシェア（V3-086 で永続化済み）
+  - 歴代ベストの称号下に達成日時を表示（レガシーの場合は非表示）
   - 初回シェア時に PlayerNameInputView をシートで表示（`.sheet(onDismiss:)` パターン）
   - ScoreStore の直接参照を廃止し、GameManager 経由に統一
   - VoiceOver 対応（label, hint）
@@ -606,7 +620,10 @@ V3-130 (ローカライゼーション = Phase V3-D)
 - [ ] ビルド成功（`xcodebuild build`）
 - [ ] 全テスト通過（`xcodebuild test`）
 - [ ] CPSTier 8段階: 各段階の閾値でピッチ・パーティクルが変化することを実機確認
-- [ ] 背景色: CPSTier 上昇に伴い背景が明るくなることを実機確認
+- [ ] 背景色: CPSTier 上昇に伴い背景が紺→紫→マゼンタ→橙赤に変化することを実機確認
+- [ ] 背景色: tier 境界でチラつかないこと（ヒステリシス）を実機確認
+- [ ] 背景色: タップを止めると緩やかに色が戻ること（0.26秒）を実機確認
+- [ ] 背景色: 白文字HUDが全tier帯で読めることを実機確認
 - [ ] 揺れ: 序盤（0〜3秒）で揺れが知覚できることを実機確認
 - [ ] Reduce Motion: 設定 ON 時に揺れが軽減されることを実機確認
 - [ ] シェア: 一時ファイル URL 方式で AirDrop/LINE/X にスコアカードが送信できることを実機確認
