@@ -24,7 +24,7 @@ struct GameTouchView: UIViewRepresentable {
 final class TouchDetectionView: UIView {
     var onTap: (([CGPoint]) -> Void)?
     var currentPhase: GamePhase = .home
-    var currentParticleTier: CPSTier = .normal
+    var currentParticleTier: CPSTier = .t0
 
     private let maxSimultaneousEmitters = 5
     private let emitterStopDelay: TimeInterval = 0.05

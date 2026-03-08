@@ -82,59 +82,80 @@ struct ModelsTests {
         #expect(TimeStage.stage(at: 10.0) == .intense)
     }
 
-    @Test("V2-014: CPSTier boundary mapping")
+    @Test("V3-020: CPSTier boundary mapping")
     func cpsTier_boundaryValues() {
-        #expect(CPSTier.tier(for: 0) == .normal)
-        #expect(CPSTier.tier(for: 7) == .normal)
-        #expect(CPSTier.tier(for: 8) == .medium)
-        #expect(CPSTier.tier(for: 19) == .medium)
-        #expect(CPSTier.tier(for: 20) == .maximum)
-        #expect(CPSTier.tier(for: 60) == .maximum)
+        #expect(CPSTier.tier(for: -1) == .t0)
+        #expect(CPSTier.tier(for: 0) == .t0)
+        #expect(CPSTier.tier(for: 4) == .t0)
+        #expect(CPSTier.tier(for: 5) == .t1)
+        #expect(CPSTier.tier(for: 7) == .t1)
+        #expect(CPSTier.tier(for: 8) == .t2)
+        #expect(CPSTier.tier(for: 10) == .t2)
+        #expect(CPSTier.tier(for: 11) == .t3)
+        #expect(CPSTier.tier(for: 14) == .t3)
+        #expect(CPSTier.tier(for: 15) == .t4)
+        #expect(CPSTier.tier(for: 18) == .t4)
+        #expect(CPSTier.tier(for: 19) == .t5)
+        #expect(CPSTier.tier(for: 22) == .t5)
+        #expect(CPSTier.tier(for: 23) == .t6)
+        #expect(CPSTier.tier(for: 26) == .t6)
+        #expect(CPSTier.tier(for: 27) == .t7)
+        #expect(CPSTier.tier(for: 100) == .t7)
+        #expect(CPSTier.t0 < .t1)
+        #expect(CPSTier.t6 < .t7)
     }
 
-    @Test("V2-015: ParticleConfig values and mapping")
+    @Test("V3-040: ParticleConfig values, limits, and mapping")
     func particleConfig_values() {
-        #expect(ParticleConfig.normal.birthRate == 30)
-        #expect(ParticleConfig.normal.scale == 0.5)
-        #expect(ParticleConfig.normal.scaleRange == 0.2)
-        #expect(ParticleConfig.normal.velocity == 120)
-        #expect(ParticleConfig.normal.velocityRange == 40)
-        #expect(ParticleConfig.normal.lifetime == 0.3)
-        #expect(ParticleConfig.normal.scaleSpeed == -0.5)
-        #expect(colorComponents(ParticleConfig.normal.color) == [1.0, 1.0, 1.0, 0.95])
+        let expectedConfigs: [(tier: CPSTier, config: ParticleConfig, color: [CGFloat])] = [
+            (.t0, .t0, [1.0, 1.0, 1.0, 0.95]),
+            (.t1, .t1, [1.0, 0.95, 0.8, 0.95]),
+            (.t2, .t2, [1.0, 0.88, 0.62, 0.95]),
+            (.t3, .t3, [1.0, 0.82, 0.44, 0.95]),
+            (.t4, .t4, [1.0, 0.78, 0.3, 0.95]),
+            (.t5, .t5, [1.0, 0.72, 0.2, 0.95]),
+            (.t6, .t6, [1.0, 0.66, 0.16, 0.95]),
+            (.t7, .t7, [1.0, 0.6, 0.12, 0.95]),
+        ]
 
-        #expect(ParticleConfig.medium.birthRate == 45)
-        #expect(ParticleConfig.medium.scale == 0.75)
-        #expect(ParticleConfig.medium.scaleRange == 0.35)
-        #expect(ParticleConfig.medium.velocity == 250)
-        #expect(ParticleConfig.medium.velocityRange == 80)
-        #expect(ParticleConfig.medium.lifetime == 0.45)
-        #expect(ParticleConfig.medium.scaleSpeed == -0.8)
-        #expect(colorComponents(ParticleConfig.medium.color) == [1.0, 0.7, 0.2, 0.95])
+        let expectedBirthRates: [Float] = [30, 34, 38, 44, 50, 56, 60, 64]
+        let expectedScales: [CGFloat] = [0.50, 0.58, 0.66, 0.74, 0.82, 0.90, 0.98, 1.06]
+        let expectedLifetimes: [Float] = [0.30, 0.32, 0.36, 0.40, 0.45, 0.50, 0.53, 0.56]
+        let expectedVelocities: [CGFloat] = [120, 160, 210, 270, 340, 410, 470, 540]
 
-        #expect(ParticleConfig.maximum.birthRate == 60)
-        #expect(ParticleConfig.maximum.scale == 1.0)
-        #expect(ParticleConfig.maximum.scaleRange == 0.5)
-        #expect(ParticleConfig.maximum.velocity == 500)
-        #expect(ParticleConfig.maximum.velocityRange == 200)
-        #expect(ParticleConfig.maximum.lifetime == 0.55)
-        #expect(ParticleConfig.maximum.scaleSpeed == -1.0)
-        #expect(colorComponents(ParticleConfig.maximum.color) == [1.0, 0.8, 0.2, 0.95])
+        for (index, expected) in expectedConfigs.enumerated() {
+            let config = ParticleConfig.config(for: expected.tier)
+            #expect(config.birthRate == expectedBirthRates[index])
+            #expect(config.scale == expectedScales[index])
+            #expect(config.lifetime == expectedLifetimes[index])
+            #expect(config.velocity == expectedVelocities[index])
+            #expect(config.birthRate <= 64)
+            #expect(colorComponents(config.color) == expected.color)
 
-        #expect(ParticleConfig.config(for: .normal).birthRate == ParticleConfig.normal.birthRate)
-        #expect(ParticleConfig.config(for: .medium).birthRate == ParticleConfig.medium.birthRate)
-        #expect(ParticleConfig.config(for: .maximum).birthRate == ParticleConfig.maximum.birthRate)
+            if index > 0 {
+                let previous = ParticleConfig.config(for: expectedConfigs[index - 1].tier)
+                #expect(previous.birthRate < config.birthRate)
+                #expect(previous.scale < config.scale)
+            }
+        }
     }
 
-    @Test("T-015: PitchConfig values and mapping")
+    @Test("V3-030: PitchConfig values and mapping")
     func pitchConfig_values() {
-        #expect(PitchConfig.normal.pitchShift == 0)
-        #expect(PitchConfig.medium.pitchShift == 200)
-        #expect(PitchConfig.maximum.pitchShift == 500)
+        let expectedPitchShifts: [(CPSTier, Float)] = [
+            (.t0, 0),
+            (.t1, 60),
+            (.t2, 130),
+            (.t3, 220),
+            (.t4, 320),
+            (.t5, 430),
+            (.t6, 540),
+            (.t7, 680),
+        ]
 
-        #expect(PitchConfig.config(for: .normal).pitchShift == PitchConfig.normal.pitchShift)
-        #expect(PitchConfig.config(for: .medium).pitchShift == PitchConfig.medium.pitchShift)
-        #expect(PitchConfig.config(for: .maximum).pitchShift == PitchConfig.maximum.pitchShift)
+        for (tier, expectedPitchShift) in expectedPitchShifts {
+            #expect(PitchConfig.config(for: tier).pitchShift == expectedPitchShift)
+        }
     }
 
     private func colorComponents(_ color: CGColor) -> [CGFloat] {

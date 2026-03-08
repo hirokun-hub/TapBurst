@@ -14,7 +14,7 @@ final class GameManager {
     var remainingTime: TimeInterval = 10.0
     var currentCPS: Int = 0
     var currentTimeStage: TimeStage = .calm
-    var currentCPSTier: CPSTier = .normal
+    var currentCPSTier: CPSTier = .t0
 
     var shakeOffset: CGSize = .zero
     var flashOpacity: Double = 0.0
@@ -75,7 +75,7 @@ final class GameManager {
         remainingTime = gameDuration
         currentCPS = 0
         currentTimeStage = .calm
-        currentCPSTier = .normal
+        currentCPSTier = .t0
 
         shakeOffset = .zero
         flashOpacity = 0.0
@@ -187,7 +187,7 @@ final class GameManager {
         remainingTime = gameDuration
         currentCPS = 0
         currentTimeStage = .calm
-        currentCPSTier = .normal
+        currentCPSTier = .t0
         resetEffects()
     }
 
@@ -202,7 +202,7 @@ final class GameManager {
         remainingTime = gameDuration
         currentCPS = 0
         currentTimeStage = .calm
-        currentCPSTier = .normal
+        currentCPSTier = .t0
         lastFlashTime = 0.0
         resetEffects()
 
@@ -258,7 +258,7 @@ final class GameManager {
         remainingTime = 0.0
         currentCPS = 0
         currentTimeStage = .calm
-        currentCPSTier = .normal
+        currentCPSTier = .t0
         countdownNumber = nil
         resetEffects()
 

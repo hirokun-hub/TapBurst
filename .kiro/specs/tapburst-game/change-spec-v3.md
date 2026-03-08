@@ -454,16 +454,18 @@ C-03 (揺れ改善 + Reduce Motion) ---------- 独立（C-01 とは無関係）
   - 変更履歴に v1.9 追記
   - 設計書 `design.md` の CPSTier/PitchConfig セクションも更新
 
-- [ ] **V3-020** `TDD` CPSTier.swift を 8段階に変更 (C-01)
+- [x] **V3-020** `TDD` CPSTier.swift を 8段階に変更 (C-01)
   - enum case: `.t0`〜`.t7`（`Int` rawValue, `Comparable` 準拠）
   - `tier(for:)` を 8段階の閾値マッピングに変更
-  - テスト: 全 16 境界値（0,4→t0, 5,7→t1, 8,10→t2, 11,14→t3, 15,18→t4, 19,22→t5, 23,26→t6, 27,100→t7）
+  - テスト: 全 17 境界値（-1,0,4→t0, 5,7→t1, 8,10→t2, 11,14→t3, 15,18→t4, 19,22→t5, 23,26→t6, 27,100→t7）
+  - テスト: 負の CPS 入力（-1）が `.t0` にマッピングされることを明示的に検証
 
-- [ ] **V3-030** `TDD` PitchConfig.swift を 8段階に変更 (C-01)
+- [x] **V3-030** `TDD` PitchConfig.swift を 8段階に変更 (C-01)
   - 8段階ピッチテーブル: 0, 60, 130, 220, 320, 430, 540, 680
+  - Dictionary lookup (`table[tier] ?? 0`) → switch 全ケース網羅方式に変更（ケース追加時のコンパイル検出を保証）
   - テスト: 各 tier のピッチ値が設計値と一致
 
-- [ ] **V3-040** `TDD` ParticleConfig.swift を 8段階に変更 (C-01)
+- [x] **V3-040** `TDD` ParticleConfig.swift を 8段階に変更 (C-01)
   - t0〜t3: 低密度〜中密度（段階的に birthRate/scale/velocity を増加）
   - t4〜t7: 高密度（既存 maximum 相当を基準に段階的に強化）
   - iPhone SE 3rd gen のパフォーマンス予算内（同時 emitter 5、birthRate 最大 64）
@@ -471,9 +473,9 @@ C-03 (揺れ改善 + Reduce Motion) ---------- 独立（C-01 とは無関係）
   - テスト: 全 tier で birthRate <= 64 を回帰テストとして検証（iPhone SE 3rd gen 上限）
   - テスト: tier 間で birthRate/scale が単調増加であること
 
-- [ ] **V3-050** GameManager の CPSTier 初期値を `.t0` に変更 (C-01)
+- [x] **V3-050** GameManager の CPSTier 初期値を `.t0` に変更 (C-01)
   - `currentCPSTier` 初期値: `.normal` → `.t0`
-  - `startGame()`, `beginPlaying()`, `handleBackground()` 内の `.normal` → `.t0`
+  - `startGame()`, `beginPlaying()`, `endGame()`, `handleBackground()` 内の `.normal` → `.t0`
 
 ### Phase V3-B: 視覚演出改善
 
