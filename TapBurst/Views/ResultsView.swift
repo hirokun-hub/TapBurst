@@ -3,6 +3,13 @@ import UIKit
 
 struct ResultsView: View {
     @Bindable var gameManager: GameManager
+    @State private var showingPlayerNameInput = false
+    @State private var showingSaveResultAlert = false
+    @State private var saveResultMessage = ""
+    @State private var playerNameSubmission: PlayerNameInputView.Submission?
+    @State private var shouldResumeShareAfterDismiss = false
+
+    private let shareService = ShareService()
 
     private static let heroSpacing: CGFloat = 18
     private static let buttonSpacing: CGFloat = 14
@@ -17,6 +24,19 @@ struct ResultsView: View {
                     .padding(.horizontal, 24)
                     .padding(.vertical, 18)
             }
+        }
+        .sheet(isPresented: $showingPlayerNameInput, onDismiss: handlePlayerNameDismiss) {
+            PlayerNameInputView(
+                initialName: gameManager.playerName,
+                onComplete: { submission in
+                    playerNameSubmission = submission
+                }
+            )
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
+        }
+        .alert(saveResultMessage, isPresented: $showingSaveResultAlert) {
+            Button("OK", role: .cancel) {}
         }
     }
 
@@ -85,9 +105,18 @@ struct ResultsView: View {
                     title: String(localized: "results.share"),
                     color: .blue,
                     hint: String(localized: "a11y.results.share_hint"),
+                    sortPriority: 3
+                ) {
+                    beginShareFlow()
+                }
+
+                actionButton(
+                    title: String(localized: "results.save"),
+                    color: .green,
+                    hint: String(localized: "a11y.results.save_hint"),
                     sortPriority: 2
                 ) {
-                    shareScore(result: result)
+                    saveScore(result: result)
                 }
 
                 actionButton(
@@ -129,20 +158,70 @@ struct ResultsView: View {
     }
 
     @MainActor
-    private func shareScore(result: ScoreResult) {
-        guard let image = generateScorecardImage(result: result) else {
+    private func beginShareFlow() {
+        if gameManager.playerName == nil {
+            shouldResumeShareAfterDismiss = true
+            showingPlayerNameInput = true
             return
         }
-        shareScorecard(image: image)
+        shareScoreIfPossible()
     }
 
-    private func shareScorecard(image: UIImage) {
-        let activityVC = UIActivityViewController(activityItems: [image], applicationActivities: nil)
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let rootViewController = windowScene.windows.first?.rootViewController else {
+    @MainActor
+    private func shareScoreIfPossible() {
+        guard let result = gameManager.result,
+              let image = generateScorecardImage(result: result, playerName: gameManager.playerName) else {
             return
         }
-        rootViewController.present(activityVC, animated: true)
+        shareService.shareScorecard(image: image, score: result.score)
+    }
+
+    private func saveScore(result: ScoreResult) {
+        Task {
+            guard let image = await MainActor.run(body: {
+                generateScorecardImage(result: result, playerName: gameManager.playerName)
+            }) else {
+                await MainActor.run {
+                    saveResultMessage = String(localized: "results.save_failed")
+                    showingSaveResultAlert = true
+                }
+                return
+            }
+
+            do {
+                try await shareService.saveToPhotoLibrary(image: image)
+                await MainActor.run {
+                    saveResultMessage = String(localized: "results.save_success")
+                    showingSaveResultAlert = true
+                }
+            } catch ShareService.PhotoLibraryError.permissionDenied {
+                await shareService.presentPhotoLibraryDeniedAlert()
+            } catch {
+                await MainActor.run {
+                    saveResultMessage = String(localized: "results.save_denied")
+                    showingSaveResultAlert = true
+                }
+            }
+        }
+    }
+
+    @MainActor
+    private func handlePlayerNameDismiss() {
+        guard shouldResumeShareAfterDismiss else {
+            playerNameSubmission = nil
+            return
+        }
+
+        defer {
+            shouldResumeShareAfterDismiss = false
+            playerNameSubmission = nil
+        }
+
+        if case let .save(name) = playerNameSubmission {
+            gameManager.savePlayerName(name)
+        }
+
+        shareScoreIfPossible()
     }
 }
 
@@ -150,6 +229,7 @@ struct ResultsView: View {
     let manager = GameManager()
     manager.result = ScoreResult(
         score: 250,
+        cps: 25.0,
         title: TitleDefinition.title(for: 250),
         isNewBest: true,
         playedAt: .now

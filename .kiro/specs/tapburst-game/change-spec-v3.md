@@ -499,14 +499,14 @@ C-03 (揺れ改善 + Reduce Motion) ---------- 独立（C-01 とは無関係）
 
 ### Phase V3-C: シェア機能改善
 
-- [ ] **V3-085** `TDD` ScoreResult に `cps: Double` プロパティを追加 (C-05 前提)
+- [x] **V3-085** `TDD` ScoreResult に `cps: Double` プロパティを追加 (C-05 前提)
   - `ScoreResult.swift`: `cps: Double` プロパティ追加
   - `GameManager.endGame()`: ScoreResult 生成時に `cps` を算出して渡す（`Double(score) / gameDuration`）
   - `ResultsView` Preview, `ScorecardView` Preview: `cps:` 引数追加
   - `generateScorecardImage()` 呼び出し元: 変更不要（ScoreResult 経由）
   - テスト: ScoreResult 生成時に cps が正しく設定されることを検証
 
-- [ ] **V3-086** `TDD` ScoreStore に BestScoreSnapshot を追加 (C-06 前提)
+- [x] **V3-086** `TDD` ScoreStore に BestScoreSnapshot を追加 (C-06 前提)
   - `BestScoreSnapshot: Codable` 構造体（score, cps, playedAt: Date?）
   - `playedAt` は optional: v3以降のベスト更新時は `Date()` を設定、レガシーレコードは nil
   - `bestScoreSnapshot: BestScoreSnapshot?` computed property（UserDefaults JSON）
@@ -516,48 +516,62 @@ C-03 (揺れ改善 + Reduce Motion) ---------- 独立（C-01 とは無関係）
   - テスト: snapshot 保存・復元、resetAll 後に nil、マイグレーション動作（playedAt が nil であること）
   - `GameManager.endGame()`: `updateIfNeeded` 呼び出しに `cps:` `playedAt:` 引数追加
 
-- [ ] **V3-090** ShareService.swift を新規作成 (C-04)
+- [x] **V3-090** ShareService.swift を新規作成 (C-04)
   - `shareScorecard(image:score:from:)`: UIImage → 一時ファイル URL（`TapBurst_{score}_{UUID}.png`） → UIActivityViewController
-  - シェア前に前回以前の一時ファイル（`TapBurst_*.png`）を掃除
-  - `saveToPhotoLibrary(image:)`: PHPhotoLibrary 保存（async/await）
+  - シェア前に前回以前の一時ファイル（`TapBurst_*.png`）を掃除（`try?` で非致命的に実行）
+  - `saveToPhotoLibrary(image:)`: PHPhotoLibrary 保存（async/await）、権限判定は `.authorized` のみ
   - `requestPhotoLibraryPermission()`: `.addOnly` 認可要求
   - 権限拒否時: 設定アプリ誘導アラート
 
-- [ ] **V3-091** Info.plist に `NSPhotoLibraryAddUsageDescription` 追加 (C-04)
+- [x] **V3-091** `InfoPlist.xcstrings` を新規作成し `NSPhotoLibraryAddUsageDescription` を ja/en ローカライズ (C-04)
+  - `project.pbxproj` の `INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription` 直書きは削除
 
-- [ ] **V3-100** ScorecardView にプレイヤー名・CPS・称号バッジを追加 (C-05)
+- [x] **V3-100** ScorecardView にプレイヤー名・CPS・称号バッジを追加 (C-05)
   - プレイヤー名: スコア上部、12文字上限、未設定時は非表示
   - CPS 表示: スコア下部（ScoreResult.cps を使用 — V3-085 で追加済み）
   - 称号バッジ: Capsule 背景付き
 
-- [ ] **V3-101** PlayerNameInputView.swift を新規作成 (C-05)
+- [x] **V3-101** PlayerNameInputView.swift を新規作成 (C-05)
+  - `Submission` enum（`.save(String)` / `.skip`）+ 単一 `onComplete` コールバック方式
   - 名前入力シート（TextField + 保存/スキップボタン）
-  - サニタイズ処理: trim、制御文字除去、連続スペース圧縮、ゼロ幅文字フィルタ
+  - 文字数制限は UI 側で 12 文字に制限（`onChange` で `prefix`）、サニタイズは ScoreStore 側で実施
   - 絵文字は許可
 
-- [ ] **V3-102** `TDD` ScoreStore にプレイヤー名の保存・取得を追加 (C-05)
+- [x] **V3-102** `TDD` ScoreStore にプレイヤー名の保存・取得を追加 (C-05)
   - `playerName: String?` computed property（UserDefaults）
   - `savePlayerName(_:)` メソッド（サニタイズ処理込み）
   - テスト: 保存・取得、nil 初期値、サニタイズ（空白 trim、制御文字除去、連続スペース圧縮、ゼロ幅文字フィルタ、絵文字許可、空文字→nil）
 
-- [ ] **V3-110** ResultsView を ShareService 経由に変更 + 保存ボタン追加 (C-04)
+- [x] **V3-103** GameManager に `playerName`, `bestScoreSnapshot`, `savePlayerName(_:)` を公開 (C-05/C-06)
+  - View から ScoreStore を直接参照せず、GameManager 経由でアクセスする設計に統一
+  - `playerName: String?` — ScoreStore の computed property を委譲
+  - `bestScoreSnapshot: BestScoreSnapshot?` — ScoreStore の computed property を委譲
+  - `savePlayerName(_:)` — ScoreStore のメソッドを委譲
+
+- [x] **V3-110** ResultsView を ShareService 経由に変更 + 保存ボタン追加 (C-04)
   - `shareScore()` を `ShareService.shareScorecard()` 経由に変更
   - 「保存」ボタンを追加（PHPhotoLibrary 保存）
-  - 初回シェア時に PlayerNameInputView をシートで表示
+  - 画像生成失敗時は `results.save_failed`（専用エラーメッセージ）を表示
+  - 初回シェア時に PlayerNameInputView をシートで表示（`.sheet(onDismiss:)` パターン）
+  - ScoreStore の直接参照を廃止し、GameManager 経由に統一
 
-- [ ] **V3-120** HomeView にシェア導線を追加 (C-06)
+- [x] **V3-120** HomeView にシェア導線を追加 (C-06)
   - スコアパネル内にシェアアイコンボタン（`bestScore > 0` 時のみ表示）
-  - `ScoreStore.bestScoreSnapshot` から ScoreResult を復元してシェア（V3-086 で永続化済み）
+  - `gameManager.bestScoreSnapshot` から ScoreResult を復元してシェア（V3-086 で永続化済み）
+  - 初回シェア時に PlayerNameInputView をシートで表示（`.sheet(onDismiss:)` パターン）
+  - ScoreStore の直接参照を廃止し、GameManager 経由に統一
   - VoiceOver 対応（label, hint）
 
 ### Phase V3-D: ローカライゼーション + ドキュメント
 
-- [ ] **V3-130** Localizable.xcstrings に v3 文言を追加
-  - 保存ボタン: `results.save`, `results.save_success`, `results.save_denied`
-  - 名前入力: `player_name.title`, `player_name.placeholder`, `player_name.save`, `player_name.skip`
-  - ホームシェア: `home.share_best`
+- [x] **V3-130** Localizable.xcstrings に v3 文言を追加
+  - 保存ボタン: `results.save`, `results.save_success`, `results.save_denied`, `results.save_failed`
+  - 名前入力: `player_name.title`, `player_name.message`, `player_name.placeholder`, `player_name.save`, `player_name.skip`
+  - ホームシェア: `home.share_best`, `a11y.home.share_best_hint`
   - 権限: `photo_library.denied_title`, `photo_library.denied_message`, `photo_library.open_settings`
+  - 保存ヒント: `a11y.results.save_hint`
   - 設定誘導: `settings.open`
+  - キャンセル: `common.cancel`
 
 ---
 

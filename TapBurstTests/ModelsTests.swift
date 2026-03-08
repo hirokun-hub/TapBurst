@@ -1,6 +1,7 @@
 import Testing
 import CoreFoundation
 import CoreGraphics
+import Foundation
 @testable import TapBurst
 
 struct ModelsTests {
@@ -156,6 +157,19 @@ struct ModelsTests {
         for (tier, expectedPitchShift) in expectedPitchShifts {
             #expect(PitchConfig.config(for: tier).pitchShift == expectedPitchShift)
         }
+    }
+
+    @Test("V3-085: ScoreResult stores cps value")
+    func scoreResult_storesCpsValue() {
+        let result = ScoreResult(
+            score: 188,
+            cps: 18.8,
+            title: TitleDefinition.title(for: 188),
+            isNewBest: true,
+            playedAt: .now
+        )
+
+        #expect(result.cps == 18.8)
     }
 
     private func colorComponents(_ color: CGColor) -> [CGFloat] {

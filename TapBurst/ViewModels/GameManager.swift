@@ -24,6 +24,14 @@ final class GameManager {
     var bestScore: Int = 0
     var todayBestScore: Int = 0
 
+    var playerName: String? {
+        scoreStore.playerName
+    }
+
+    var bestScoreSnapshot: BestScoreSnapshot? {
+        scoreStore.bestScoreSnapshot
+    }
+
     private let scoreStore: ScoreStore
     private let audioService: AudioService
     private let hapticsService: HapticsService
@@ -177,6 +185,10 @@ final class GameManager {
         todayBestScore = 0
     }
 
+    func savePlayerName(_ name: String) {
+        scoreStore.savePlayerName(name)
+    }
+
     func handleBackground() {
         guard phase == .countdown || phase == .playing || phase == .finish else {
             return
@@ -245,16 +257,19 @@ final class GameManager {
         UIApplication.shared.isIdleTimerDisabled = false
 
         let score = session.score
-        let isNewBest = scoreStore.updateIfNeeded(score: score)
+        let playedAt = Date()
+        let cps = Double(score) / gameDuration
+        let isNewBest = scoreStore.updateIfNeeded(score: score, cps: cps, playedAt: playedAt)
         bestScore = scoreStore.bestScore
         scoreStore.updateTodayIfNeeded(score: score)
         todayBestScore = scoreStore.todayBestScore
 
         result = ScoreResult(
             score: score,
+            cps: cps,
             title: TitleDefinition.title(for: score),
             isNewBest: isNewBest,
-            playedAt: Date()
+            playedAt: playedAt
         )
 
         phase = .finish

@@ -4,6 +4,11 @@ struct HomeView: View {
     @Bindable var gameManager: GameManager
 
     @State private var showingResetConfirmation = false
+    @State private var showingPlayerNameInput = false
+    @State private var playerNameSubmission: PlayerNameInputView.Submission?
+    @State private var shouldResumeShareAfterDismiss = false
+
+    private let shareService = ShareService()
 
     private static let columnSpacing: CGFloat = 32
 
@@ -17,6 +22,16 @@ struct HomeView: View {
             }
             .padding(.horizontal, 28)
             .padding(.vertical, 18)
+        }
+        .sheet(isPresented: $showingPlayerNameInput, onDismiss: handlePlayerNameDismiss) {
+            PlayerNameInputView(
+                initialName: gameManager.playerName,
+                onComplete: { submission in
+                    playerNameSubmission = submission
+                }
+            )
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
         }
     }
 
@@ -39,20 +54,38 @@ struct HomeView: View {
 
     private var scorePanel: some View {
         VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(String(localized: "home.best_score"))
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.7))
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(String(localized: "home.best_score"))
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.7))
 
-                Text(bestScoreText)
-                    .font(.system(size: 48, weight: .black, design: .rounded))
-                    .monospacedDigit()
-                    .foregroundStyle(.white)
+                    Text(bestScoreText)
+                        .font(.system(size: 48, weight: .black, design: .rounded))
+                        .monospacedDigit()
+                        .foregroundStyle(.white)
+
+                    if gameManager.bestScore > 0 {
+                        Text(TitleDefinition.title(for: gameManager.bestScore).localizedName)
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.5))
+                    }
+                }
+
+                Spacer()
 
                 if gameManager.bestScore > 0 {
-                    Text(TitleDefinition.title(for: gameManager.bestScore).localizedName)
-                        .font(.system(size: 14, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.5))
+                    Button(action: beginShareFlow) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundStyle(.white)
+                            .frame(width: 44, height: 44)
+                            .background(.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text(String(localized: "home.share_best")))
+                    .accessibilityHint(Text(String(localized: "a11y.home.share_best_hint")))
+                    .accessibilitySortPriority(4)
                 }
             }
 
@@ -76,11 +109,6 @@ struct HomeView: View {
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
         .background(.black.opacity(0.25), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("\(String(localized: "home.best_score")), \(String(localized: "home.today_best"))"))
-        .accessibilityValue(Text("\(bestScoreText), \(todayBestText)"))
-        .accessibilityAddTraits(.isStaticText)
-        .accessibilitySortPriority(3)
     }
 
     private var resetButton: some View {
@@ -147,6 +175,56 @@ struct HomeView: View {
 
     private var showDifference: Bool {
         gameManager.todayBestScore > 0 && gameManager.todayBestScore < gameManager.bestScore
+    }
+
+    @MainActor
+    private func beginShareFlow() {
+        if gameManager.playerName == nil {
+            shouldResumeShareAfterDismiss = true
+            showingPlayerNameInput = true
+            return
+        }
+        shareBestScore()
+    }
+
+    @MainActor
+    private func shareBestScore() {
+        guard let snapshot = gameManager.bestScoreSnapshot else {
+            return
+        }
+
+        let result = ScoreResult(
+            score: snapshot.score,
+            cps: snapshot.cps,
+            title: TitleDefinition.title(for: snapshot.score),
+            isNewBest: false,
+            playedAt: snapshot.playedAt
+        )
+
+        guard let image = generateScorecardImage(result: result, playerName: gameManager.playerName) else {
+            return
+        }
+
+        shareService.shareScorecard(image: image, score: snapshot.score)
+    }
+
+    @MainActor
+    private func handlePlayerNameDismiss() {
+        guard shouldResumeShareAfterDismiss else {
+            playerNameSubmission = nil
+            return
+        }
+
+        defer {
+            shouldResumeShareAfterDismiss = false
+            playerNameSubmission = nil
+        }
+
+        if case let .save(name) = playerNameSubmission {
+            gameManager.savePlayerName(name)
+        }
+
+        shareBestScore()
     }
 }
 
